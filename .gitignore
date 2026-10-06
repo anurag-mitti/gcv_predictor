@@ -1,0 +1,18 @@
+# Environments
+venv/
+env/
+.env
+
+# Python Caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.ipynb_checkpoints/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Note: models/ and data/ are intentionally NOT ignored so the Streamlit app works out-of-the-box when cloned.
