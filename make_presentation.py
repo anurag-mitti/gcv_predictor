@@ -79,7 +79,7 @@ def create_deck():
     bullets = [
         "• Uses simple lab inputs: Moisture, Volatile Matter, and Ash",
         "• Combines Random Forest, XGBoost, and SVM for high accuracy",
-        "• Tested on real geological coal data with sub-2% error rate",
+        "• Tested on real geological coal data with sub-2% CV error score",
         "• Feature explanation charts showing how each property impacts heating value"
     ]
     for b in bullets:
@@ -87,8 +87,6 @@ def create_deck():
         run_b.text = b + "\n"
         run_b.font.size = Pt(14)
         run_b.font.color.rgb = TEXT_WHITE
-
-    # (Slide 2: "Problem & Motivation" has been removed as requested)
 
     # ==========================================
     # SLIDE 2: DATA PREPARATION & CLEANING
@@ -173,23 +171,24 @@ def create_deck():
     add_run_line(p_r3, "\nWhy this helped:\n• Keeps models simpler and faster\n• Lets shallow trees reach lower errors\n• Directly reflects real coal combustion chemistry", size=13, color=TEXT_WHITE, bold=False, space_before=12)
 
     # ==========================================
-    # SLIDE 4: MODEL COMPARISON TABLE
+    # SLIDE 4: MODEL COMPARISON TABLE (WITH EXPLICIT CV SCORE COLUMN)
     # ==========================================
     s4 = prs.slides.add_slide(blank_layout)
     apply_bg(s4)
     add_header(s4, "Testing Different Models (5-Fold Cross Validation)", "MODEL BENCHMARKING")
 
-    rows, cols = 6, 4
-    left, top, width, height = Inches(0.8), Inches(1.8), Inches(6.5), Inches(4.5)
+    rows, cols = 6, 5
+    left, top, width, height = Inches(0.8), Inches(1.8), Inches(6.6), Inches(4.5)
     table_shape = s4.shapes.add_table(rows, cols, left, top, width, height)
     table = table_shape.table
 
-    table.columns[0].width = Inches(2.6)
-    table.columns[1].width = Inches(1.3)
-    table.columns[2].width = Inches(1.3)
-    table.columns[3].width = Inches(1.3)
+    table.columns[0].width = Inches(2.2)
+    table.columns[1].width = Inches(1.2)
+    table.columns[2].width = Inches(1.1)
+    table.columns[3].width = Inches(1.1)
+    table.columns[4].width = Inches(1.0)
 
-    headers = ["Model", "Average Error (RMSE)", "Absolute Error (MAE)", "Accuracy (R²)"]
+    headers = ["Model", "RMSE", "MAE", "CV Score", "R² Score"]
     for j, h in enumerate(headers):
         cell = table.cell(0, j)
         cell.fill.solid()
@@ -198,11 +197,11 @@ def create_deck():
         add_run_line(p, h, size=11, color=TEXT_WHITE, bold=True)
 
     data = [
-        ("Support Vector Machine (SVR)", "612.45 Kcal/kg", "487.12", "0.35"),
-        ("Single Decision Tree", "217.30 Kcal/kg", "148.80", "0.92"),
-        ("Random Forest", "154.84 Kcal/kg", "109.12", "0.95"),
-        ("XGBoost", "152.14 Kcal/kg", "107.45", "0.96"),
-        ("Combined Ensemble (Ours)", "150.28 Kcal/kg", "105.97", "0.96")
+        ("Support Vector (SVR)", "612.45", "487.12", "8.89%", "0.35"),
+        ("Single Decision Tree", "217.30", "148.80", "3.15%", "0.92"),
+        ("Random Forest", "154.84", "109.12", "2.25%", "0.95"),
+        ("XGBoost", "152.14", "107.45", "2.21%", "0.96"),
+        ("Combined Ensemble", "150.28", "105.97", "2.18%", "0.96")
     ]
 
     for i, row in enumerate(data):
@@ -232,7 +231,7 @@ def create_deck():
         s5.shapes.add_picture(arch_img, Inches(0.8), Inches(1.7), width=Inches(11.73))
 
     # ==========================================
-    # SLIDE 6: TUNING THE MODELS (CLEANLY FRAMED - NO OVERFLOW)
+    # SLIDE 6: TUNING THE MODELS
     # ==========================================
     s6 = prs.slides.add_slide(blank_layout)
     apply_bg(s6)
@@ -255,7 +254,7 @@ def create_deck():
         p = tf6.add_paragraph()
         add_run_line(p, "• " + pt, size=13, color=TEXT_WHITE, bold=False, space_before=10)
 
-    # Clean Right Box - Sized to easily fit without ANY text overflowing
+    # Clean Right Box
     pbox = s6.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.9), Inches(1.8), Inches(5.6), Inches(5.0))
     pbox.fill.solid()
     pbox.fill.fore_color.rgb = CARD_BG
@@ -269,7 +268,6 @@ def create_deck():
     p = tf_p.paragraphs[0]
     add_run_line(p, "Selected Settings:", size=16, color=ACCENT_GREEN, bold=True)
 
-    # Concise, well-spaced lines that stay comfortably inside the box
     settings_lines = [
         ("XGBoost:", ACCENT_CYAN, True, 8),
         ("• 300 trees | Max depth: 4 (prevents overfitting)", TEXT_WHITE, False, 2),
@@ -304,7 +302,7 @@ def create_deck():
         "Different types of coal burn differently. High-moisture brown coal (lignite) behaves differently than high-rank black coal (bituminous).",
         "We filtered 4,494 samples of Bituminous coal using official ASTM D388 laboratory standards.",
         "Training a specialized model on just this group produced significantly higher accuracy:",
-        "• Error dropped from 150 to 134 Kcal/kg\n• Average absolute error dropped below 100 Kcal/kg (96 Kcal/kg)\n• Error rate reached 1.91%"
+        "• Error dropped from 150 to 134 Kcal/kg\n• Average absolute error dropped below 100 Kcal/kg (96 Kcal/kg)\n• CV Score reached an exceptional 1.91%"
     ]
     for pt in b_pts:
         p = tf_b.add_paragraph()
@@ -342,17 +340,13 @@ def create_deck():
     if os.path.exists(shap_img):
         s8.shapes.add_picture(shap_img, Inches(7.0), Inches(1.8), width=Inches(5.5))
 
-    # (Slide 10: "Interactive Web App & Safety Checks" has been removed as requested)
-
     # ==========================================
-    # SLIDE 9: SUMMARY OF KEY RESULTS (SPACIOUS & CENTERED)
+    # SLIDE 9: SUMMARY OF KEY RESULTS (WITH EXPLICIT CV SCORES)
     # ==========================================
-    # ("What Can Be Added Next" card has been removed as requested)
     s9 = prs.slides.add_slide(blank_layout)
     apply_bg(s9)
     add_header(s9, "Summary of Key Results", "CONCLUSION")
 
-    # Centered Spacious Result Card
     sbox = s9.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(2.2), Inches(1.8), Inches(8.93), Inches(4.8))
     sbox.fill.solid()
     sbox.fill.fore_color.rgb = CARD_BG
@@ -370,12 +364,12 @@ def create_deck():
         ("Universal Model (All Coal Ranks):", ACCENT_CYAN, True, 14),
         ("• Average Error (RMSE): 150.28 Kcal/kg  (Target was <= 200 Kcal/kg)", TEXT_WHITE, False, 4),
         ("• Absolute Error (MAE): 105.97 Kcal/kg", TEXT_WHITE, False, 4),
-        ("• Error Percentage: 2.18%  (Industry target was < 8.0%)", TEXT_WHITE, False, 4),
+        ("• CV Score (Coefficient of Variation): 2.18%  (Target was < 8.0%)", ACCENT_AMBER, True, 4),
         ("• Accuracy Score (R²): 0.96", TEXT_WHITE, False, 4),
         ("Specialized Bituminous Coal Model:", ACCENT_GREEN, True, 16),
         ("• Average Error (RMSE): 134.18 Kcal/kg  (-16.10 Kcal/kg improvement)", TEXT_WHITE, False, 4),
         ("• Absolute Error (MAE): 96.29 Kcal/kg  (Sub-100 error margin)", TEXT_WHITE, False, 4),
-        ("• Error Percentage: 1.91%  (Sub-2% error rate)", TEXT_WHITE, False, 4),
+        ("• CV Score (Coefficient of Variation): 1.91%  (Sub-2% precision)", ACCENT_GREEN, True, 4),
         ("• Accuracy Score (R²): 0.95", TEXT_WHITE, False, 4)
     ]
     for text, col, is_b, sp in results_data:
