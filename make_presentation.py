@@ -6,15 +6,13 @@ from pptx.enum.shapes import MSO_SHAPE
 
 def create_deck():
     prs = Presentation()
-    # 16:9 Widescreen dimensions
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     
-    # Ultra-high contrast palette
+    # 100% High-Contrast Colors - Absolutely NO black or dark gray text
     BG_COLOR = RGBColor(15, 23, 42)         # Deep slate navy (#0F172A)
     CARD_BG = RGBColor(30, 41, 59)          # Card background (#1E293B)
     TEXT_WHITE = RGBColor(255, 255, 255)    # 100% Pure Crisp White
-    TEXT_BRIGHT = RGBColor(241, 245, 249)   # Crisp Silver White (#F1F5F9)
     ACCENT_CYAN = RGBColor(56, 189, 248)    # Sky Cyan (#38BDF8)
     ACCENT_GREEN = RGBColor(52, 211, 153)   # Emerald Green (#34D399)
     ACCENT_AMBER = RGBColor(251, 146, 60)   # Vivid Amber (#FB923C)
@@ -29,49 +27,67 @@ def create_deck():
         return bg
 
     def add_header(slide, title_text, category="RESEARCH & ENGINEERING WALKTHROUGH"):
-        # Category Tracker
         tb_cat = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.4))
         p_cat = tb_cat.text_frame.paragraphs[0]
-        p_cat.text = category.upper()
-        p_cat.font.size = Pt(11)
-        p_cat.font.bold = True
-        p_cat.font.color.rgb = ACCENT_CYAN
+        run_cat = p_cat.add_run()
+        run_cat.text = category.upper()
+        run_cat.font.size = Pt(11)
+        run_cat.font.bold = True
+        run_cat.font.color.rgb = ACCENT_CYAN
 
-        # Main Title
         tb = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(11.7), Inches(0.8))
         p = tb.text_frame.paragraphs[0]
-        p.text = title_text
-        p.font.size = Pt(24)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
+        run = p.add_run()
+        run.text = title_text
+        run.font.size = Pt(24)
+        run.font.bold = True
+        run.font.color.rgb = TEXT_WHITE
+
+    def add_run_line(paragraph, text, size=12, color=TEXT_WHITE, bold=False, space_before=0):
+        if space_before > 0:
+            paragraph.space_before = Pt(space_before)
+        run = paragraph.add_run()
+        run.text = text
+        run.font.size = Pt(size)
+        run.font.bold = bold
+        run.font.color.rgb = color
+        return run
 
     # ==========================================
-    # SLIDE 1: CLEAN TITLE SLIDE (NO SCRIPT AT BOTTOM)
+    # SLIDE 1: TITLE SLIDE (ALL TEXT BRIGHT WHITE & CYAN)
     # ==========================================
     s1 = prs.slides.add_slide(blank_layout)
     apply_bg(s1)
 
-    bar = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(2.2), Inches(0.18), Inches(2.8))
+    bar = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.8), Inches(0.18), Inches(3.8))
     bar.fill.solid()
     bar.fill.fore_color.rgb = ACCENT_CYAN
     bar.line.fill.background()
 
-    tb1 = s1.shapes.add_textbox(Inches(1.2), Inches(2.1), Inches(11.2), Inches(3.2))
+    tb1 = s1.shapes.add_textbox(Inches(1.2), Inches(1.8), Inches(11.2), Inches(4.2))
     tf1 = tb1.text_frame
     tf1.word_wrap = True
 
     p1 = tf1.paragraphs[0]
-    p1.text = "COAL GROSS CALORIFIC VALUE (GCV) PREDICTION"
-    p1.font.size = Pt(38)
-    p1.font.bold = True
-    p1.font.color.rgb = TEXT_WHITE
+    add_run_line(p1, "COAL GROSS CALORIFIC VALUE (GCV) PREDICTION", size=36, color=TEXT_WHITE, bold=True)
 
     p2 = tf1.add_paragraph()
-    p2.text = "High-Precision Estimation from Proximate Analysis via Bayesian-Tuned Stacking Ensembles"
-    p2.font.size = Pt(21)
-    p2.font.bold = True
-    p2.font.color.rgb = ACCENT_CYAN
-    p2.space_before = Pt(16)
+    add_run_line(p2, "High-Precision Estimation from Proximate Analysis via Bayesian-Tuned Stacking Ensembles", size=20, color=ACCENT_CYAN, bold=True, space_before=12)
+
+    p3 = tf1.add_paragraph()
+    bullets_s1 = [
+        "• Optimized Machine Learning Architecture (XGBoost, Random Forest, SVR + Ridge Meta-Learner)",
+        "• Zero-Leakage Data Hygiene & ASTM D388 Coal Rank Specialization",
+        "• Model Interpretability via SHAP (SHapley Additive exPlanations)",
+        "• Live Interactive Web Deployment with Chemical Safety Guardrails"
+    ]
+    p3.space_before = Pt(20)
+    for b in bullets_s1:
+        run_b = p3.add_run()
+        run_b.text = b + "\n"
+        run_b.font.size = Pt(14)
+        run_b.font.bold = False
+        run_b.font.color.rgb = TEXT_WHITE  # Changed from black/muted to pure crisp white!
 
     # ==========================================
     # SLIDE 2: PROBLEM STATEMENT & MOTIVATION
@@ -109,16 +125,10 @@ def create_deck():
         tf.word_wrap = True
 
         p_h = tf.paragraphs[0]
-        p_h.text = head
-        p_h.font.size = Pt(18)
-        p_h.font.bold = True
-        p_h.font.color.rgb = acc
+        add_run_line(p_h, head, size=18, color=acc, bold=True)
 
         p_b = tf.add_paragraph()
-        p_b.text = body
-        p_b.font.size = Pt(13)
-        p_b.font.color.rgb = TEXT_WHITE
-        p_b.space_before = Pt(14)
+        add_run_line(p_b, body, size=13, color=TEXT_WHITE, bold=False, space_before=14)
 
     # ==========================================
     # SLIDE 3: DATA HYGIENE & PREPROCESSING
@@ -153,16 +163,10 @@ def create_deck():
         tf.word_wrap = True
 
         p_t = tf.paragraphs[0]
-        p_t.text = title
-        p_t.font.size = Pt(16)
-        p_t.font.bold = True
-        p_t.font.color.rgb = color
+        add_run_line(p_t, title, size=16, color=color, bold=True)
 
         p_d = tf.add_paragraph()
-        p_d.text = desc
-        p_d.font.size = Pt(12.5)
-        p_d.font.color.rgb = TEXT_WHITE
-        p_d.space_before = Pt(8)
+        add_run_line(p_d, desc, size=12.5, color=TEXT_WHITE, bold=False, space_before=8)
 
     # ==========================================
     # SLIDE 4: FEATURE ENGINEERING (FUEL RATIO)
@@ -176,10 +180,7 @@ def create_deck():
     tf_l.word_wrap = True
 
     p = tf_l.paragraphs[0]
-    p.text = "The Mathematical Limitation of Tree Models:"
-    p.font.size = Pt(18)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_AMBER
+    add_run_line(p, "The Mathematical Limitation of Tree Models:", size=18, color=ACCENT_AMBER, bold=True)
 
     points = [
         "Decision trees split orthogonally (Xi > c). They cannot naturally compute division between features without hundreds of step-wise splits.",
@@ -189,10 +190,7 @@ def create_deck():
     ]
     for pt in points:
         p = tf_l.add_paragraph()
-        p.text = "• " + pt
-        p.font.size = Pt(13)
-        p.font.color.rgb = TEXT_WHITE
-        p.space_before = Pt(10)
+        add_run_line(p, "• " + pt, size=13, color=TEXT_WHITE, bold=False, space_before=10)
 
     # Formula Card Right
     fcard = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(7.2), Inches(1.8), Inches(5.3), Inches(4.8))
@@ -206,23 +204,13 @@ def create_deck():
     tf_r.word_wrap = True
 
     p_r1 = tf_r.paragraphs[0]
-    p_r1.text = "Mass Balance Formulation:"
-    p_r1.font.size = Pt(17)
-    p_r1.font.bold = True
-    p_r1.font.color.rgb = ACCENT_GREEN
+    add_run_line(p_r1, "Mass Balance Formulation:", size=17, color=ACCENT_GREEN, bold=True)
 
     p_r2 = tf_r.add_paragraph()
-    p_r2.text = "FC = 100 - (Moisture + VM + Ash)\n\nFuel Ratio = FC / VM"
-    p_r2.font.size = Pt(16)
-    p_r2.font.bold = True
-    p_r2.font.color.rgb = TEXT_WHITE
-    p_r2.space_before = Pt(12)
+    add_run_line(p_r2, "FC = 100 - (Moisture + VM + Ash)\n\nFuel Ratio = FC / VM", size=16, color=TEXT_WHITE, bold=True, space_before=12)
 
     p_r3 = tf_r.add_paragraph()
-    p_r3.text = "\nImpact on Training:\n• Drastically simplifies tree depth requirements.\n• Enables shallow XGBoost trees (depth 4) to capture coal rank variations.\n• Consistently reduces CV error across all folds."
-    p_r3.font.size = Pt(13)
-    p_r3.font.color.rgb = TEXT_BRIGHT
-    p_r3.space_before = Pt(12)
+    add_run_line(p_r3, "\nImpact on Training:\n• Drastically simplifies tree depth requirements.\n• Enables shallow XGBoost trees (depth 4) to capture coal rank variations.\n• Consistently reduces CV error across all folds.", size=13, color=TEXT_WHITE, bold=False, space_before=12)
 
     # ==========================================
     # SLIDE 5: BASELINE BENCHMARKING
@@ -244,13 +232,10 @@ def create_deck():
     headers = ["Model Architecture", "5-Fold RMSE", "5-Fold MAE", "R² Score"]
     for j, h in enumerate(headers):
         cell = table.cell(0, j)
-        cell.text = h
         cell.fill.solid()
         cell.fill.fore_color.rgb = RGBColor(30, 58, 138)
         p = cell.text_frame.paragraphs[0]
-        p.font.size = Pt(11)
-        p.font.bold = True
-        p.font.color.rgb = TEXT_WHITE
+        add_run_line(p, h, size=11, color=TEXT_WHITE, bold=True)
 
     data = [
         ("Support Vector Machine (SVR)", "612.45", "487.12", "0.3541"),
@@ -263,63 +248,29 @@ def create_deck():
     for i, row in enumerate(data):
         for j, val in enumerate(row):
             cell = table.cell(i + 1, j)
-            cell.text = val
             cell.fill.solid()
             if i == 4:
                 cell.fill.fore_color.rgb = RGBColor(6, 78, 59)
             else:
                 cell.fill.fore_color.rgb = CARD_BG
             p = cell.text_frame.paragraphs[0]
-            p.font.size = Pt(11)
-            p.font.color.rgb = TEXT_WHITE
-            if i == 4:
-                p.font.bold = True
+            add_run_line(p, val, size=11, color=TEXT_WHITE, bold=(i == 4))
 
     comp_plot = "baselines/model_comparison_plot.png"
     if os.path.exists(comp_plot):
         s5.shapes.add_picture(comp_plot, Inches(7.6), Inches(1.8), width=Inches(5.0))
 
     # ==========================================
-    # SLIDE 6: ENSEMBLE ARCHITECTURE & SVR TRANSFORMATION
+    # SLIDE 6: ENSEMBLE ARCHITECTURE WITH DIAGRAM PIC
     # ==========================================
     s6 = prs.slides.add_slide(blank_layout)
     apply_bg(s6)
-    add_header(s6, "Stacking Ensemble Architecture & SVR Normalization", "MODEL ARCHITECTURE")
+    add_header(s6, "End-to-End System & Stacking Architecture", "SYSTEM ARCHITECTURE")
 
-    cards6 = [
-        ("Level-0: Random Forest", "Bagging Regressor (200 trees, max depth 15).\n\nRole: Smooths predictive variance by averaging across de-correlated bootstrapped subsets. Resilient to isolated lab noise.", ACCENT_CYAN),
-        ("Level-0: XGBoost", "Gradient Boosted Trees (300 estimators, depth 4, lr 0.025).\n\nRole: Minimizes residual bias sequentially. Captures non-linear chemical interactions between moisture and ash.", ACCENT_AMBER),
-        ("Level-0: Scaled SVR", "Support Vector Regressor with RBF kernel.\n\nKey Solution: Wrapped inside TransformedTargetRegressor(StandardScaler) to normalize both inputs AND target GCV during kernel evaluation.", ACCENT_GREEN),
-        ("Level-1: Ridge Meta-Learner", "Linear Meta-Regressor with L2 penalty.\n\nRole: Learns optimal blending weights from out-of-fold cross-validation predictions, preventing overfitting at the ensemble layer.", ACCENT_CYAN)
-    ]
-
-    for i, (title, body, color) in enumerate(cards6):
-        left = Inches(0.8 + i * 2.95)
-        top = Inches(1.8)
-        w = Inches(2.8)
-        h = Inches(4.8)
-
-        card = s6.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, w, h)
-        card.fill.solid()
-        card.fill.fore_color.rgb = CARD_BG
-        card.line.color.rgb = color
-        card.line.width = Pt(1.5)
-
-        tb = s6.shapes.add_textbox(left + Inches(0.18), top + Inches(0.2), w - Inches(0.36), h - Inches(0.4))
-        tf = tb.text_frame
-        tf.word_wrap = True
-
-        p_h = tf.paragraphs[0]
-        p_h.text = title
-        p_h.font.size = Pt(15)
-        p_h.font.bold = True
-        p_h.font.color.rgb = color
-
-        p_b = tf.add_paragraph()
-        p_b.text = body
-        p_b.font.size = Pt(11.5)
-        p_b.font.color.rgb = TEXT_WHITE
-        p_b.space_before = Pt(12)
+    arch_img = "models/architecture_diagram.png"
+    if os.path.exists(arch_img):
+        # Insert high-resolution visual architecture diagram
+        s6.shapes.add_picture(arch_img, Inches(0.8), Inches(1.6), width=Inches(11.73))
 
     # ==========================================
     # SLIDE 7: BAYESIAN OPTIMIZATION (OPTUNA)
@@ -333,10 +284,7 @@ def create_deck():
     tf7.word_wrap = True
 
     p = tf7.paragraphs[0]
-    p.text = "Why Bayesian Optimization over Grid Search?"
-    p.font.size = Pt(17)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_CYAN
+    add_run_line(p, "Why Bayesian Optimization over Grid Search?", size=18, color=ACCENT_CYAN, bold=True)
 
     points7 = [
         "Grid Search is computationally expensive and samples uninformative parameter regions.",
@@ -346,10 +294,7 @@ def create_deck():
     ]
     for pt in points7:
         p = tf7.add_paragraph()
-        p.text = "• " + pt
-        p.font.size = Pt(13)
-        p.font.color.rgb = TEXT_WHITE
-        p.space_before = Pt(10)
+        add_run_line(p, "• " + pt, size=13, color=TEXT_WHITE, bold=False, space_before=10)
 
     # Param Box Right
     pbox = s7.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.9), Inches(1.8), Inches(5.6), Inches(4.8))
@@ -363,10 +308,7 @@ def create_deck():
     tf_p.word_wrap = True
 
     p = tf_p.paragraphs[0]
-    p.text = "Tuned Hyperparameter Snapshot:"
-    p.font.size = Pt(16)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_GREEN
+    add_run_line(p, "Tuned Hyperparameter Snapshot:", size=16, color=ACCENT_GREEN, bold=True)
 
     params_text = (
         "XGBoost Regressor:\n"
@@ -382,10 +324,7 @@ def create_deck():
         "• alpha = 0.0105  (Optimal L2 shrinkage)"
     )
     p2 = tf_p.add_paragraph()
-    p2.text = params_text
-    p2.font.size = Pt(11.5)
-    p2.font.color.rgb = TEXT_WHITE
-    p2.space_before = Pt(10)
+    add_run_line(p2, params_text, size=11.5, color=TEXT_WHITE, bold=False, space_before=10)
 
     # ==========================================
     # SLIDE 8: BITUMINOUS SPECIALIZATION
@@ -399,10 +338,7 @@ def create_deck():
     tf_b.word_wrap = True
 
     p = tf_b.paragraphs[0]
-    p.text = "The Scientific Rationale for Rank Segregation:"
-    p.font.size = Pt(17)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_GREEN
+    add_run_line(p, "The Scientific Rationale for Rank Segregation:", size=17, color=ACCENT_GREEN, bold=True)
 
     b_pts = [
         "Coal is chemically non-homogeneous across geological ranks. Lignite, Bituminous, and Anthracite exhibit vastly different volatile release kinetics.",
@@ -412,10 +348,7 @@ def create_deck():
     ]
     for pt in b_pts:
         p = tf_b.add_paragraph()
-        p.text = "• " + pt
-        p.font.size = Pt(12.5)
-        p.font.color.rgb = TEXT_WHITE
-        p.space_before = Pt(8)
+        add_run_line(p, "• " + pt, size=12.5, color=TEXT_WHITE, bold=False, space_before=8)
 
     diag_bit = "models/actual_vs_predicted_bituminous.png"
     if os.path.exists(diag_bit):
@@ -433,10 +366,7 @@ def create_deck():
     tf_s.word_wrap = True
 
     p = tf_s.paragraphs[0]
-    p.text = "Overcoming the 'Black Box' Critique:"
-    p.font.size = Pt(17)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_CYAN
+    add_run_line(p, "Overcoming the 'Black Box' Critique:", size=17, color=ACCENT_CYAN, bold=True)
 
     shap_pts = [
         "Engineers rightfully distrust black-box ML models when plant safety and boiler efficiency are at stake.",
@@ -446,10 +376,7 @@ def create_deck():
     ]
     for pt in shap_pts:
         p = tf_s.add_paragraph()
-        p.text = "• " + pt
-        p.font.size = Pt(12)
-        p.font.color.rgb = TEXT_WHITE
-        p.space_before = Pt(8)
+        add_run_line(p, "• " + pt, size=12, color=TEXT_WHITE, bold=False, space_before=8)
 
     shap_img = "models/shap_waterfall.png"
     if os.path.exists(shap_img):
@@ -488,16 +415,10 @@ def create_deck():
         tf.word_wrap = True
 
         p_t = tf.paragraphs[0]
-        p_t.text = title
-        p_t.font.size = Pt(16)
-        p_t.font.bold = True
-        p_t.font.color.rgb = color
+        add_run_line(p_t, title, size=16, color=color, bold=True)
 
         p_d = tf.add_paragraph()
-        p_d.text = body
-        p_d.font.size = Pt(12)
-        p_d.font.color.rgb = TEXT_WHITE
-        p_d.space_before = Pt(8)
+        add_run_line(p_d, body, size=12, color=TEXT_WHITE, bold=False, space_before=8)
 
     # ==========================================
     # SLIDE 11: SUMMARY & FUTURE SCOPE
@@ -517,10 +438,7 @@ def create_deck():
     tf_s.word_wrap = True
 
     p = tf_s.paragraphs[0]
-    p.text = "Final Performance Summary:"
-    p.font.size = Pt(17)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_GREEN
+    add_run_line(p, "Final Performance Summary:", size=17, color=ACCENT_GREEN, bold=True)
 
     summary_text = (
         "Universal Stacking Model (All Ranks):\n"
@@ -535,10 +453,7 @@ def create_deck():
         "• Variance Explained (R²): 0.9524"
     )
     p2 = tf_s.add_paragraph()
-    p2.text = summary_text
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = TEXT_WHITE
-    p2.space_before = Pt(10)
+    add_run_line(p2, summary_text, size=12, color=TEXT_WHITE, bold=False, space_before=10)
 
     fbox = s11.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.8), Inches(5.7), Inches(4.8))
     fbox.fill.solid()
@@ -551,10 +466,7 @@ def create_deck():
     tf_f.word_wrap = True
 
     p = tf_f.paragraphs[0]
-    p.text = "Future Research & Engineering Scope:"
-    p.font.size = Pt(17)
-    p.font.bold = True
-    p.font.color.rgb = ACCENT_CYAN
+    add_run_line(p, "Future Research & Engineering Scope:", size=17, color=ACCENT_CYAN, bold=True)
 
     future_text = (
         "1. Dual-Tier Elemental Analysis Mode:\n"
@@ -567,12 +479,8 @@ def create_deck():
         "Provide direct mathematical comparisons against Goutal and Dulong empirical equations."
     )
     p2 = tf_f.add_paragraph()
-    p2.text = future_text
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = TEXT_WHITE
-    p2.space_before = Pt(10)
+    add_run_line(p2, future_text, size=12, color=TEXT_WHITE, bold=False, space_before=10)
 
-    # Save
     out_filename = "Coal_GCV_Prediction_Presentation.pptx"
     prs.save(out_filename)
     print(f"Presentation successfully regenerated: {out_filename}")
