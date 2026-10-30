@@ -3,7 +3,8 @@
 This repository contains a robust, end-to-end Machine Learning pipeline and an interactive web dashboard designed to predict the **Gross Calorific Value (GCV)** of coal based purely on its Proximate Analysis (Moisture, Volatile Matter, and Ash).
 
 ## Key Features
-* **Stacking Ensemble Model:** Utilizes an optimized Stacking Regressor combining tuned **XGBoost**, **Random Forest**, and a **Support Vector Machine (SVM)** to achieve an RMSE of `150.28 Kcal/kg` and CV Score of `2.18%` (significantly outperforming standalone standard models).
+* **Universal Stacking Ensemble:** Combines tuned **XGBoost**, **Random Forest**, and **Support Vector Machine (SVM)** to achieve an RMSE of `150.28 Kcal/kg` and CV Score of `2.18%` across all coal ranks.
+* **Specialized Bituminous Coal Model:** A dedicated pipeline trained specifically on **ASTM D388 Bituminous Coal**, pushing precision further to an RMSE of `134.18 Kcal/kg` and CV Score of `1.91%`.
 * **Automated Feature Engineering:** Intelligently calculates exact Mass Balance (Fixed Carbon) and Fuel Ratios behind the scenes.
 * **Explainable AI (XAI):** Integrates **SHAP** (SHapley Additive exPlanations) to dynamically generate Waterfall and Force plots, explaining exactly how each chemical component drove the specific GCV prediction.
 
@@ -46,7 +47,7 @@ Navigate to the `notebooks/` directory and open:
 
 ## Project Structure
 * `app.py`: The main Streamlit web application.
-* `src/`: Python scripts for data preprocessing (`preprocess.py`), Optuna hyperparameter optimization (`tune.py`), and model training (`train.py`).
+* `src/`: Python scripts for data preprocessing (`preprocess.py`, `preprocess_bituminous.py`), Optuna hyperparameter optimization (`tune.py`), and model training (`train.py`, `train_bituminous.py`).
 * `baselines/`: Contains baseline comparison scripts, CSV metrics, and evaluation bar charts.
 * `models/`: Stores the trained `.joblib` model and generated diagnostic/SHAP plots.
 * `data/`: Contains the processed CSV training data.
