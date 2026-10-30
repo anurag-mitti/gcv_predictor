@@ -1,0 +1,28 @@
+{
+    "xgb": {
+        "n_estimators": 300,
+        "max_depth": 4,
+        "learning_rate": 0.025626594532613914,
+        "subsample": 0.7,
+        "colsample_bytree": 0.8,
+        "min_child_weight": 2,
+        "reg_alpha": 0.0022506964441883818,
+        "reg_lambda": 0.01605578860390656
+    },
+    "rf": {
+        "n_estimators": 200,
+        "max_depth": 15,
+        "min_samples_split": 6,
+        "min_samples_leaf": 4,
+        "max_features": 0.7
+    },
+    "svr": {
+        "C": 1.2923033748256396,
+        "epsilon": 0.08573805989512623,
+        "gamma": "auto"
+    },
+    "meta": {
+        "alpha": 0.010526104888446743,
+        "positive": false
+    }
+}

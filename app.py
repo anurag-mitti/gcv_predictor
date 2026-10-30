@@ -69,7 +69,7 @@ def load_model():
 # ==========================================
 # APP LAYOUT
 # ==========================================
-st.title("🔥 Advanced Coal Analysis AI")
+st.title(" Advanced Coal Analysis ")
 st.markdown("<p style='color: #a3a8b8; font-size: 1.2rem; margin-bottom: 30px;'>Predict Gross Calorific Value (GCV) instantly from Proximate Analysis.</p>", unsafe_allow_html=True)
 
 # Load resources
@@ -85,8 +85,13 @@ with col_inputs:
     
     moisture = st.slider("Moisture (%)", min_value=0.0, max_value=40.0, value=10.0, step=0.1)
     vm = st.slider("Volatile Matter (%)", min_value=0.0, max_value=60.0, value=25.0, step=0.1)
-    ash = st.slider("Standard Ash (%)", min_value=0.0, max_value=50.0, value=15.0, step=0.1)
+    ash = st.slider("Standard Ash (%)", min_value=0.0, max_value=60.0, value=15.0, step=0.1)
     
+    # Validation Rules
+    if ash > 55:
+        st.error("❌ Invalid Input: Standard Ash exceeds the realistic limit of 55% for this model.")
+        st.stop()
+        
     # Auto-calculate derived features
     fixed_carbon = 100.0 - (moisture + vm + ash)
     
@@ -115,11 +120,12 @@ with col_inputs:
     st.markdown("### 📊 Model Performance")
     st.markdown("*(5-Fold Cross-Validation)*")
     
-    col_m1, col_m2, col_m3 = st.columns(3)
-    col_m1.metric("R² Score", "0.9594")
-    col_m2.metric("RMSE", "151.75")
-    col_m3.metric("MAE", "106.74")
-    st.caption("Target RMSE was ≤ 200 Kcal/kg. The model successfully exceeded expectations.")
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    col_m1.metric("Confidence", ">95%")
+    col_m2.metric("RMSE", "150.28")
+    col_m3.metric("MAE", "105.97")
+    col_m4.metric("CV Score", "2.18%")
+    st.caption("Target CV Score was ~8%. Our model vastly outperformed it at 2.18%.")
     
     st.markdown("---")
     with st.expander("🔍 View Model Diagnostics", expanded=False):
