@@ -9,13 +9,13 @@ def create_deck():
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     
-    # 100% High-Contrast Colors - Absolutely NO black or dark gray text
+    # 100% High-Contrast Colors - Crisp and Simple
     BG_COLOR = RGBColor(15, 23, 42)         # Deep slate navy (#0F172A)
     CARD_BG = RGBColor(30, 41, 59)          # Card background (#1E293B)
-    TEXT_WHITE = RGBColor(255, 255, 255)    # 100% Pure Crisp White
-    ACCENT_CYAN = RGBColor(56, 189, 248)    # Sky Cyan (#38BDF8)
-    ACCENT_GREEN = RGBColor(52, 211, 153)   # Emerald Green (#34D399)
-    ACCENT_AMBER = RGBColor(251, 146, 60)   # Vivid Amber (#FB923C)
+    TEXT_WHITE = RGBColor(255, 255, 255)    # Pure White
+    ACCENT_CYAN = RGBColor(56, 189, 248)    # Sky Cyan
+    ACCENT_GREEN = RGBColor(52, 211, 153)   # Emerald Green
+    ACCENT_AMBER = RGBColor(251, 146, 60)   # Amber
     
     blank_layout = prs.slide_layouts[6]
     
@@ -26,7 +26,7 @@ def create_deck():
         bg.line.fill.background()
         return bg
 
-    def add_header(slide, title_text, category="RESEARCH & ENGINEERING WALKTHROUGH"):
+    def add_header(slide, title_text, category="COAL GCV PREDICTION"):
         tb_cat = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.4))
         p_cat = tb_cat.text_frame.paragraphs[0]
         run_cat = p_cat.add_run()
@@ -54,57 +54,56 @@ def create_deck():
         return run
 
     # ==========================================
-    # SLIDE 1: TITLE SLIDE (ALL TEXT BRIGHT WHITE & CYAN)
+    # SLIDE 1: CLEAN TITLE SLIDE
     # ==========================================
     s1 = prs.slides.add_slide(blank_layout)
     apply_bg(s1)
 
-    bar = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(1.8), Inches(0.18), Inches(3.8))
+    bar = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), Inches(2.0), Inches(0.18), Inches(3.4))
     bar.fill.solid()
     bar.fill.fore_color.rgb = ACCENT_CYAN
     bar.line.fill.background()
 
-    tb1 = s1.shapes.add_textbox(Inches(1.2), Inches(1.8), Inches(11.2), Inches(4.2))
+    tb1 = s1.shapes.add_textbox(Inches(1.2), Inches(1.9), Inches(11.2), Inches(3.8))
     tf1 = tb1.text_frame
     tf1.word_wrap = True
 
     p1 = tf1.paragraphs[0]
-    add_run_line(p1, "COAL GROSS CALORIFIC VALUE (GCV) PREDICTION", size=36, color=TEXT_WHITE, bold=True)
+    add_run_line(p1, "COAL GCV PREDICTION SYSTEM", size=38, color=TEXT_WHITE, bold=True)
 
     p2 = tf1.add_paragraph()
-    add_run_line(p2, "High-Precision Estimation from Proximate Analysis via Bayesian-Tuned Stacking Ensembles", size=20, color=ACCENT_CYAN, bold=True, space_before=12)
+    add_run_line(p2, "Estimating Coal Energy Value from Lab Tests using Machine Learning", size=21, color=ACCENT_CYAN, bold=True, space_before=14)
 
     p3 = tf1.add_paragraph()
-    bullets_s1 = [
-        "• Optimized Machine Learning Architecture (XGBoost, Random Forest, SVR + Ridge Meta-Learner)",
-        "• Zero-Leakage Data Hygiene & ASTM D388 Coal Rank Specialization",
-        "• Model Interpretability via SHAP (SHapley Additive exPlanations)",
-        "• Live Interactive Web Deployment with Chemical Safety Guardrails"
+    p3.space_before = Pt(22)
+    bullets = [
+        "• Uses simple lab inputs: Moisture, Volatile Matter, and Ash",
+        "• Combines Random Forest, XGBoost, and SVM for high accuracy",
+        "• Tested on real geological coal data with sub-2% error",
+        "• Web app with interactive charts showing why the model makes each prediction"
     ]
-    p3.space_before = Pt(20)
-    for b in bullets_s1:
+    for b in bullets:
         run_b = p3.add_run()
         run_b.text = b + "\n"
         run_b.font.size = Pt(14)
-        run_b.font.bold = False
-        run_b.font.color.rgb = TEXT_WHITE  # Changed from black/muted to pure crisp white!
+        run_b.font.color.rgb = TEXT_WHITE
 
     # ==========================================
-    # SLIDE 2: PROBLEM STATEMENT & MOTIVATION
+    # SLIDE 2: WHY WE BUILT THIS
     # ==========================================
     s2 = prs.slides.add_slide(blank_layout)
     apply_bg(s2)
-    add_header(s2, "Industrial Motivation & Problem Formulation", "CONTEXT & OBJECTIVE")
+    add_header(s2, "Problem & Motivation", "BACKGROUND")
 
     cards = [
-        ("The Laboratory Bottleneck", 
-         "Standard bomb calorimetry requires oxygen-pressurized combustion bombs, calibrated water jackets, and skilled technicians.\n\nResult: 24–48 hour turnaround times delay critical coal blending decisions in power plants.",
+        ("The Current Problem", 
+         "Measuring Gross Calorific Value (GCV) experimentally in a bomb calorimeter is slow and requires expensive equipment.\n\nLab results often take 1 to 2 days, delaying decisions in power plants and coal trading.",
          ACCENT_AMBER),
-        ("The Proximate Advantage",
-         "Proximate analysis (Moisture, Volatile Matter, Ash) is rapid, inexpensive, and standardized.\n\nGoal: Map proximate parameters directly to GCV with high fidelity, enabling immediate day-of-delivery decision making.",
+        ("The Solution",
+         "Proximate analysis (Moisture, Volatile Matter, and Ash) is quick, cheap, and routine.\n\nWe train Machine Learning models to calculate GCV accurately from these basic numbers in seconds.",
          ACCENT_CYAN),
-        ("Rigorous Target Metrics",
-         "Target RMSE: <= 200 Kcal/kg\nTarget CV Score: < 8.0%\n\nOur system surpassed both tolerances, delivering 150.28 Kcal/kg (2.18% CV) overall and 134.18 Kcal/kg (1.91% CV) for bituminous coal.",
+        ("Accuracy Target",
+         "Industry Target: RMSE under 200 Kcal/kg (Error under 8%).\n\nOur Results:\n• Overall model: 150 Kcal/kg (2.18% error)\n• Bituminous model: 134 Kcal/kg (1.91% error)\nBoth easily beat the target.",
          ACCENT_GREEN)
     ]
 
@@ -131,17 +130,17 @@ def create_deck():
         add_run_line(p_b, body, size=13, color=TEXT_WHITE, bold=False, space_before=14)
 
     # ==========================================
-    # SLIDE 3: DATA HYGIENE & PREPROCESSING
+    # SLIDE 3: DATA PREPARATION & CLEANING
     # ==========================================
     s3 = prs.slides.add_slide(blank_layout)
     apply_bg(s3)
-    add_header(s3, "Data Hygiene & Zero-Target-Leakage Protocol", "DATASET & PREPROCESSING")
+    add_header(s3, "Data Preparation & Cleaning", "DATASET")
 
     steps = [
-        ("1. Unit Standardization", "Raw dataset contains imperial heating values in Btu/lb. Converted to international metric standard:\nGCV (Kcal/kg) = Btu / 1.8", ACCENT_CYAN),
-        ("2. Zero Target Leakage", "In amateur ML workflows, imputers often fit across features AND target GCV. We enforced strict isolation: KNN imputation fits ONLY on features [Moisture, VM, Ash].", ACCENT_GREEN),
-        ("3. Physical Bounds", "Enforced physical combustion realism:\n• GCV: 2000 to 9000 Kcal/kg\n• Standard Ash <= 55%\n• Moisture <= 45%, VM <= 60%", ACCENT_AMBER),
-        ("4. Mass Balance Integrity", "By proximate definition, components sum to 100%:\nFixed Carbon = 100 - (Moisture + VM + Ash)\nRetained exclusively samples with Fixed Carbon > 0.", ACCENT_CYAN)
+        ("1. Unit Conversion", "Raw laboratory data came with heating values in Btu/lb.\nConverted to standard metric units:\nGCV (Kcal/kg) = Btu / 1.8", ACCENT_CYAN),
+        ("2. Handling Missing Values", "Some samples had missing moisture or ash values.\nUsed a K-Nearest Neighbors (KNN) imputer using only other input features, never using the target value.", ACCENT_GREEN),
+        ("3. Removing Bad Data", "Removed obvious measurement errors and impossible samples:\n• Energy below 2000 or above 9000 Kcal/kg\n• Ash above 55% (unusable for fuel)\n• Negative moisture or volatile matter", ACCENT_AMBER),
+        ("4. Mass Balance Check", "Moisture + Volatiles + Ash + Carbon must total 100%:\nFixed Carbon = 100 - (Moisture + VM + Ash)\nRemoved any samples where this total was broken.", ACCENT_CYAN)
     ]
 
     for i, (title, desc, color) in enumerate(steps):
@@ -169,24 +168,24 @@ def create_deck():
         add_run_line(p_d, desc, size=12.5, color=TEXT_WHITE, bold=False, space_before=8)
 
     # ==========================================
-    # SLIDE 4: FEATURE ENGINEERING (FUEL RATIO)
+    # SLIDE 4: WHY WE ADDED FUEL RATIO
     # ==========================================
     s4 = prs.slides.add_slide(blank_layout)
     apply_bg(s4)
-    add_header(s4, "Domain Feature Engineering: Why Add Fuel Ratio?", "FEATURE ENGINEERING")
+    add_header(s4, "Feature Calculation: Why Add Fuel Ratio?", "FEATURE CALCULATION")
 
     tb_left = s4.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(6.0), Inches(4.8))
     tf_l = tb_left.text_frame
     tf_l.word_wrap = True
 
     p = tf_l.paragraphs[0]
-    add_run_line(p, "The Mathematical Limitation of Tree Models:", size=18, color=ACCENT_AMBER, bold=True)
+    add_run_line(p, "Why ML Models Need Help With Division:", size=18, color=ACCENT_AMBER, bold=True)
 
     points = [
-        "Decision trees split orthogonally (Xi > c). They cannot naturally compute division between features without hundreds of step-wise splits.",
-        "In coal petrology, the Fuel Ratio is defined as:\nFuel Ratio = Fixed Carbon / Volatile Matter",
-        "Fuel Ratio is the universally accepted chemical proxy for coal rank (Anthracite vs Bituminous vs Lignite).",
-        "By calculating it explicitly prior to training, we feed the model an explicit rank descriptor without requiring extra lab testing."
+        "Decision trees (XGBoost, Random Forest) split data using simple 'if greater than' rules. They cannot naturally divide two numbers without hundreds of complex splits.",
+        "In coal chemistry, Fuel Ratio is a standard formula:\nFuel Ratio = Fixed Carbon / Volatile Matter",
+        "Fuel Ratio tells you what kind of coal you have (Lignite vs Bituminous vs Anthracite).",
+        "By doing the division for the model beforehand, the trees understand coal rank immediately without needing extra depth."
     ]
     for pt in points:
         p = tf_l.add_paragraph()
@@ -204,20 +203,20 @@ def create_deck():
     tf_r.word_wrap = True
 
     p_r1 = tf_r.paragraphs[0]
-    add_run_line(p_r1, "Mass Balance Formulation:", size=17, color=ACCENT_GREEN, bold=True)
+    add_run_line(p_r1, "Formulas Added to the Data:", size=17, color=ACCENT_GREEN, bold=True)
 
     p_r2 = tf_r.add_paragraph()
-    add_run_line(p_r2, "FC = 100 - (Moisture + VM + Ash)\n\nFuel Ratio = FC / VM", size=16, color=TEXT_WHITE, bold=True, space_before=12)
+    add_run_line(p_r2, "1. Fixed Carbon = 100 - (Moisture + VM + Ash)\n\n2. Fuel Ratio = Fixed Carbon / VM", size=15, color=TEXT_WHITE, bold=True, space_before=12)
 
     p_r3 = tf_r.add_paragraph()
-    add_run_line(p_r3, "\nImpact on Training:\n• Drastically simplifies tree depth requirements.\n• Enables shallow XGBoost trees (depth 4) to capture coal rank variations.\n• Consistently reduces CV error across all folds.", size=13, color=TEXT_WHITE, bold=False, space_before=12)
+    add_run_line(p_r3, "\nWhy this helped:\n• Keeps models simpler and faster\n• Lets shallow trees reach lower errors\n• Directly reflects real coal combustion chemistry", size=13, color=TEXT_WHITE, bold=False, space_before=12)
 
     # ==========================================
-    # SLIDE 5: BASELINE BENCHMARKING
+    # SLIDE 5: MODEL COMPARISON TABLE
     # ==========================================
     s5 = prs.slides.add_slide(blank_layout)
     apply_bg(s5)
-    add_header(s5, "Quantitative Benchmarking: Proving Ensemble Superiority", "MODEL EVALUATION")
+    add_header(s5, "Testing Different Models (5-Fold Cross Validation)", "MODEL BENCHMARKING")
 
     rows, cols = 6, 4
     left, top, width, height = Inches(0.8), Inches(1.8), Inches(6.5), Inches(4.5)
@@ -229,7 +228,7 @@ def create_deck():
     table.columns[2].width = Inches(1.3)
     table.columns[3].width = Inches(1.3)
 
-    headers = ["Model Architecture", "5-Fold RMSE", "5-Fold MAE", "R² Score"]
+    headers = ["Model", "Average Error (RMSE)", "Absolute Error (MAE)", "Accuracy (R²)"]
     for j, h in enumerate(headers):
         cell = table.cell(0, j)
         cell.fill.solid()
@@ -238,11 +237,11 @@ def create_deck():
         add_run_line(p, h, size=11, color=TEXT_WHITE, bold=True)
 
     data = [
-        ("Support Vector Machine (SVR)", "612.45", "487.12", "0.3541"),
-        ("Decision Tree Regressor", "217.30", "148.80", "0.9168"),
-        ("Random Forest Regressor", "154.84", "109.12", "0.9571"),
-        ("XGBoost Regressor", "152.14", "107.45", "0.9585"),
-        ("Stacked Ensemble (Ours)", "150.28", "105.97", "0.9595")
+        ("Support Vector Machine (SVR)", "612.45 Kcal/kg", "487.12", "0.35"),
+        ("Single Decision Tree", "217.30 Kcal/kg", "148.80", "0.92"),
+        ("Random Forest", "154.84 Kcal/kg", "109.12", "0.95"),
+        ("XGBoost", "152.14 Kcal/kg", "107.45", "0.96"),
+        ("Combined Ensemble (Ours)", "150.28 Kcal/kg", "105.97", "0.96")
     ]
 
     for i, row in enumerate(data):
@@ -261,36 +260,36 @@ def create_deck():
         s5.shapes.add_picture(comp_plot, Inches(7.6), Inches(1.8), width=Inches(5.0))
 
     # ==========================================
-    # SLIDE 6: ENSEMBLE ARCHITECTURE WITH DIAGRAM PIC
+    # SLIDE 6: CLEAN SYSTEM ARCHITECTURE
     # ==========================================
     s6 = prs.slides.add_slide(blank_layout)
     apply_bg(s6)
-    add_header(s6, "End-to-End System & Stacking Architecture", "SYSTEM ARCHITECTURE")
+    add_header(s6, "System Architecture: How the Models Work Together", "ARCHITECTURE")
 
     arch_img = "models/architecture_diagram.png"
     if os.path.exists(arch_img):
-        # Insert high-resolution visual architecture diagram
-        s6.shapes.add_picture(arch_img, Inches(0.8), Inches(1.6), width=Inches(11.73))
+        # Insert clean, symmetrical horizontal diagram
+        s6.shapes.add_picture(arch_img, Inches(0.8), Inches(1.7), width=Inches(11.73))
 
     # ==========================================
-    # SLIDE 7: BAYESIAN OPTIMIZATION (OPTUNA)
+    # SLIDE 7: TUNING THE MODELS
     # ==========================================
     s7 = prs.slides.add_slide(blank_layout)
     apply_bg(s7)
-    add_header(s7, "Bayesian Hyperparameter Optimization via Optuna", "HYPERPARAMETER TUNING")
+    add_header(s7, "Tuning the Models (Finding the Best Parameters)", "MODEL TUNING")
 
     tb_left7 = s7.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.8), Inches(4.8))
     tf7 = tb_left7.text_frame
     tf7.word_wrap = True
 
     p = tf7.paragraphs[0]
-    add_run_line(p, "Why Bayesian Optimization over Grid Search?", size=18, color=ACCENT_CYAN, bold=True)
+    add_run_line(p, "How We Tuned the Parameters:", size=18, color=ACCENT_CYAN, bold=True)
 
     points7 = [
-        "Grid Search is computationally expensive and samples uninformative parameter regions.",
-        "Optuna utilizes Tree-structured Parzen Estimators (TPE) to model the probability distribution of 5-fold CV RMSE.",
-        "It concentrates evaluation trials where parameter combinations historically yield lower error.",
-        "Optimal parameters saved to models/best_params.json for transparent, reproducible deployment."
+        "Instead of guessing numbers, we used an automated tuning tool called Optuna.",
+        "Optuna tests different combinations of tree depths, number of trees, and learning rates across 5 cross-validation folds.",
+        "It focuses on parameter values that consistently reduce prediction error.",
+        "For XGBoost, it selected a tree depth of 4 (shallow trees). This prevents the model from memorizing random lab noise and helps it generalize to new samples."
     ]
     for pt in points7:
         p = tf7.add_paragraph()
@@ -308,92 +307,93 @@ def create_deck():
     tf_p.word_wrap = True
 
     p = tf_p.paragraphs[0]
-    add_run_line(p, "Tuned Hyperparameter Snapshot:", size=16, color=ACCENT_GREEN, bold=True)
+    add_run_line(p, "Selected Settings:", size=16, color=ACCENT_GREEN, bold=True)
 
     params_text = (
-        "XGBoost Regressor:\n"
-        "• n_estimators = 300  |  max_depth = 4\n"
-        "• learning_rate = 0.0256  |  subsample = 0.7\n"
-        "• colsample_bytree = 0.8  |  min_child_weight = 2\n\n"
-        "Random Forest Regressor:\n"
-        "• n_estimators = 200  |  max_depth = 15\n"
-        "• min_samples_leaf = 4  |  max_features = 0.7\n\n"
-        "Support Vector Regressor (SVR):\n"
-        "• C = 1.292  |  epsilon = 0.0857  |  gamma = 'auto'\n\n"
-        "Stacking Meta-Learner (Ridge):\n"
-        "• alpha = 0.0105  (Optimal L2 shrinkage)"
+        "XGBoost:\n"
+        "• Number of trees: 300\n"
+        "• Maximum depth: 4 (shallow trees prevent overfitting)\n"
+        "• Learning rate: 0.025\n\n"
+        "Random Forest:\n"
+        "• Number of trees: 200\n"
+        "• Maximum depth: 15\n"
+        "• Min samples per leaf: 4\n\n"
+        "Support Vector Machine:\n"
+        "• Uses normalized data so large GCV numbers don't break it\n\n"
+        "Final Blending Model:\n"
+        "• Ridge Regression assigning weights to each model"
     )
     p2 = tf_p.add_paragraph()
     add_run_line(p2, params_text, size=11.5, color=TEXT_WHITE, bold=False, space_before=10)
 
     # ==========================================
-    # SLIDE 8: BITUMINOUS SPECIALIZATION
+    # SLIDE 8: BITUMINOUS COAL SPECIALIZATION
     # ==========================================
     s8 = prs.slides.add_slide(blank_layout)
     apply_bg(s8)
-    add_header(s8, "Coal Rank Specialization: ASTM D388 Bituminous Model", "RANK SPECIALIZATION")
+    add_header(s8, "Specialized Model for Bituminous Coal", "COAL RANK")
 
     tb_b_left = s8.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.8), Inches(4.8))
     tf_b = tb_b_left.text_frame
     tf_b.word_wrap = True
 
     p = tf_b.paragraphs[0]
-    add_run_line(p, "The Scientific Rationale for Rank Segregation:", size=17, color=ACCENT_GREEN, bold=True)
+    add_run_line(p, "Why Train a Separate Model?", size=18, color=ACCENT_GREEN, bold=True)
 
     b_pts = [
-        "Coal is chemically non-homogeneous across geological ranks. Lignite, Bituminous, and Anthracite exhibit vastly different volatile release kinetics.",
-        "Under ASTM D388, Bituminous Coal is strictly classified by:\n• Moist Mineral-Matter-Free Btu >= 10,500 Btu/lb\n• Dry MMF Volatile Matter >= 14.0%\n• Dry MMF Fixed Carbon < 86.0%",
-        "We isolated 4,494 verified bituminous samples and trained a dedicated model pipeline (src/train_bituminous.py).",
-        "Performance Impact:\n• RMSE dropped to 134.18 Kcal/kg (vs 150.28)\n• MAE dropped to 96.29 Kcal/kg (sub-100 error!)\n• CV Score reached 1.91%"
+        "Different types of coal burn differently. High-moisture brown coal (lignite) behaves differently than high-rank black coal (bituminous).",
+        "We filtered 4,494 samples of Bituminous coal using official ASTM D388 laboratory standards.",
+        "Training a specialized model on just this group produced significantly higher accuracy:",
+        "• Error dropped from 150 to 134 Kcal/kg\n• Average absolute error dropped below 100 Kcal/kg (96 Kcal/kg)\n• Error rate reached 1.91%"
     ]
     for pt in b_pts:
         p = tf_b.add_paragraph()
-        add_run_line(p, "• " + pt, size=12.5, color=TEXT_WHITE, bold=False, space_before=8)
+        add_run_line(p, "• " + pt, size=13, color=TEXT_WHITE, bold=False, space_before=10)
 
     diag_bit = "models/actual_vs_predicted_bituminous.png"
     if os.path.exists(diag_bit):
         s8.shapes.add_picture(diag_bit, Inches(7.0), Inches(1.8), width=Inches(5.5))
 
     # ==========================================
-    # SLIDE 9: EXPLAINABLE AI (SHAP)
+    # SLIDE 9: EXPLAINING PREDICTIONS (SHAP)
     # ==========================================
     s9 = prs.slides.add_slide(blank_layout)
     apply_bg(s9)
-    add_header(s9, "Explainable AI: SHAP Chemical Interpretability", "MODEL INTERPRETABILITY")
+    add_header(s9, "Explaining Predictions (No Black Box)", "EXPLAINABILITY")
 
     tb_s_left = s9.shapes.add_textbox(Inches(0.8), Inches(1.8), Inches(5.8), Inches(4.8))
     tf_s = tb_s_left.text_frame
     tf_s.word_wrap = True
 
     p = tf_s.paragraphs[0]
-    add_run_line(p, "Overcoming the 'Black Box' Critique:", size=17, color=ACCENT_CYAN, bold=True)
+    add_run_line(p, "Why Does the Model Guess What It Does?", size=18, color=ACCENT_CYAN, bold=True)
 
     shap_pts = [
-        "Engineers rightfully distrust black-box ML models when plant safety and boiler efficiency are at stake.",
-        "We integrated SHAP (SHapley Additive exPlanations) using TreeExplainer to explain individual local predictions.",
-        "Thermodynamic Sanity Check:\n• Moisture: Strong negative SHAP driver (water absorbs heat via vaporization at 540 cal/g).\n• Ash: Strong negative SHAP driver (inert mineral matter acts as a thermal heat sink).\n• Fixed Carbon & Fuel Ratio: Dominant positive drivers (primary energy-producing organic matrix).",
-        "The model's internal feature attribution perfectly validates established combustion thermodynamics."
+        "In industry, engineers need to understand why a model makes a prediction rather than just trusting a black-box number.",
+        "We integrated SHAP, a method that breaks down how much each chemical feature contributed to the final score.",
+        "The model's reasoning matches real chemistry:\n• Moisture pulls energy down (it takes heat to boil water)\n• Ash pulls energy down (rock/dirt does not burn)\n• Carbon and Fuel Ratio push energy up (actual fuel)",
+        "The graph on the right shows a sample prediction and how each feature pushed the value up (red) or down (blue)."
     ]
     for pt in shap_pts:
         p = tf_s.add_paragraph()
-        add_run_line(p, "• " + pt, size=12, color=TEXT_WHITE, bold=False, space_before=8)
+        add_run_line(p, "• " + pt, size=12.5, color=TEXT_WHITE, bold=False, space_before=8)
 
     shap_img = "models/shap_waterfall.png"
     if os.path.exists(shap_img):
         s9.shapes.add_picture(shap_img, Inches(7.0), Inches(1.8), width=Inches(5.5))
 
     # ==========================================
-    # SLIDE 10: WEB DASHBOARD & PRODUCTION DEPLOYMENT
+    # SLIDE 10: WEB APP & INPUT SAFETY
     # ==========================================
     s10 = prs.slides.add_slide(blank_layout)
     apply_bg(s10)
-    add_header(s10, "Interactive Streamlit Deployment & Domain Guardrails", "SYSTEM DEPLOYMENT")
+    add_header(s10, "Interactive Web App & Safety Checks", "WEB APPLICATION")
 
     dep_cards = [
-        ("Dual-Tab Architecture", "• Tab 1: Universal Model (All coal ranks)\n• Tab 2: Bituminous Specialized Model (ASTM D388)\nUsers seamlessly switch between general coal and high-precision bituminous mode.", ACCENT_CYAN),
-        ("Domain-Specific Guardrails", "• Mass Balance Validation: Flags an immediate error if Moisture + VM + Ash > 100%.\n• Ash Limit Rule: Rejects inputs exceeding realistic combustible limits (Ash > 55%).", ACCENT_AMBER),
-        ("Real-Time Explainability", "Every slider adjustment instantly triggers model re-prediction and renders dynamic SHAP waterfall plots explaining the chemical drivers behind that specific prediction.", ACCENT_GREEN),
-        ("Production Cloud Ready", "Deployed via Streamlit Community Cloud with GitHub CI/CD tracking main branch. Serialized models (<20MB) load in sub-second inference speed.", ACCENT_CYAN)
+        ("Two Dedicated Tabs", "• Tab 1: Universal Model for all coal types\n• Tab 2: Specialized Bituminous Model\nUsers can test any coal sample or switch to the specialized model for higher precision.", ACCENT_CYAN),
+        ("Safety & Validation Checks", "• Mass Balance Check: If Moisture + VM + Ash exceeds 100%, the app warns the user.\n• Ash Limit Check: Rejects impossible samples where Ash is greater than 55%.", ACCENT_AMBER),
+        ("Instant Visual Explanations", "Whenever a slider is moved, the app recalculates the prediction instantly and draws a SHAP graph showing which feature had the biggest impact.", ACCENT_GREEN),
+        ("Live Web Deployment", "The application is deployed on Streamlit Cloud and connected to our GitHub repository for easy sharing and testing from any browser.", ACCENT_CYAN)
     ]
 
     for i, (title, body, color) in enumerate(dep_cards):
@@ -421,11 +421,11 @@ def create_deck():
         add_run_line(p_d, body, size=12, color=TEXT_WHITE, bold=False, space_before=8)
 
     # ==========================================
-    # SLIDE 11: SUMMARY & FUTURE SCOPE
+    # SLIDE 11: SUMMARY & NEXT STEPS
     # ==========================================
     s11 = prs.slides.add_slide(blank_layout)
     apply_bg(s11)
-    add_header(s11, "Project Summary & Future Research Directions", "CONCLUSION & ROADMAP")
+    add_header(s11, "Summary & Future Improvements", "CONCLUSION")
 
     sbox = s11.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.8), Inches(5.6), Inches(4.8))
     sbox.fill.solid()
@@ -438,22 +438,22 @@ def create_deck():
     tf_s.word_wrap = True
 
     p = tf_s.paragraphs[0]
-    add_run_line(p, "Final Performance Summary:", size=17, color=ACCENT_GREEN, bold=True)
+    add_run_line(p, "Key Results:", size=18, color=ACCENT_GREEN, bold=True)
 
     summary_text = (
-        "Universal Stacking Model (All Ranks):\n"
-        "• 5-Fold CV RMSE: 150.28 Kcal/kg\n"
-        "• 5-Fold CV MAE: 105.97 Kcal/kg\n"
-        "• Coefficient of Variation (CV): 2.18%\n"
-        "• Variance Explained (R²): 0.9595\n\n"
-        "Bituminous Specialized Model (ASTM D388):\n"
-        "• 5-Fold CV RMSE: 134.18 Kcal/kg  (-16.10)\n"
-        "• 5-Fold CV MAE: 96.29 Kcal/kg  (<100!)\n"
-        "• Coefficient of Variation (CV): 1.91%\n"
-        "• Variance Explained (R²): 0.9524"
+        "Universal Model (All Coal):\n"
+        "• Average Error (RMSE): 150.28 Kcal/kg\n"
+        "• Absolute Error (MAE): 105.97 Kcal/kg\n"
+        "• Error Percentage: 2.18% (target was < 8%)\n"
+        "• Accuracy (R²): 0.96\n\n"
+        "Bituminous Model:\n"
+        "• Average Error (RMSE): 134.18 Kcal/kg\n"
+        "• Absolute Error (MAE): 96.29 Kcal/kg\n"
+        "• Error Percentage: 1.91%\n"
+        "• Accuracy (R²): 0.95"
     )
     p2 = tf_s.add_paragraph()
-    add_run_line(p2, summary_text, size=12, color=TEXT_WHITE, bold=False, space_before=10)
+    add_run_line(p2, summary_text, size=12.5, color=TEXT_WHITE, bold=False, space_before=10)
 
     fbox = s11.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(6.8), Inches(1.8), Inches(5.7), Inches(4.8))
     fbox.fill.solid()
@@ -466,17 +466,17 @@ def create_deck():
     tf_f.word_wrap = True
 
     p = tf_f.paragraphs[0]
-    add_run_line(p, "Future Research & Engineering Scope:", size=17, color=ACCENT_CYAN, bold=True)
+    add_run_line(p, "What Can Be Added Next:", size=18, color=ACCENT_CYAN, bold=True)
 
     future_text = (
-        "1. Dual-Tier Elemental Analysis Mode:\n"
-        "Ingest Ultimate Analysis (Carbon, Hydrogen, Oxygen, Sulfur) when available to drive RMSE below 50 Kcal/kg.\n\n"
-        "2. Quantile Regression & Uncertainty Bounds:\n"
-        "Predict 90% confidence intervals around GCV values rather than point estimates to inform risk-aware procurement.\n\n"
-        "3. High-Throughput Batch Processing:\n"
-        "Enable bulk CSV uploads for trainload shipments with automated PDF laboratory certificates.\n\n"
-        "4. Classical Formula Benchmarking:\n"
-        "Provide direct mathematical comparisons against Goutal and Dulong empirical equations."
+        "1. Ultimate Analysis Mode:\n"
+        "If elemental test numbers are available (Carbon, Hydrogen, Oxygen, Sulfur), adding them can bring error under 50 Kcal/kg.\n\n"
+        "2. Prediction Ranges (Confidence Intervals):\n"
+        "Give a range (e.g. 6800 ± 80 Kcal/kg) instead of a single number to show certainty.\n\n"
+        "3. Bulk Upload:\n"
+        "Add a button in the web app to upload a full CSV with thousands of samples at once.\n\n"
+        "4. Formula Comparison:\n"
+        "Compare model accuracy directly with classical Dulong and Goutal empirical formulas."
     )
     p2 = tf_f.add_paragraph()
     add_run_line(p2, future_text, size=12, color=TEXT_WHITE, bold=False, space_before=10)

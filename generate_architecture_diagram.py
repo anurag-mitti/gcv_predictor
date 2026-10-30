@@ -1,96 +1,113 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-def draw_architecture():
-    fig, ax = plt.subplots(figsize=(14, 8), dpi=300)
+def draw_clean_architecture():
+    # 16:9 aspect ratio matching PowerPoint slide
+    fig, ax = plt.subplots(figsize=(13, 6.2), dpi=300)
     fig.patch.set_facecolor('#0F172A')
     ax.set_facecolor('#0F172A')
     ax.axis('off')
 
-    # Color Palette
-    c_input = '#0284C7'    # Sky Blue
-    c_feat = '#0D9488'     # Teal
-    c_model = '#3B82F6'    # Blue
-    c_meta = '#10B981'     # Emerald Green
-    c_out = '#F59E0B'      # Amber
-    c_text = '#FFFFFF'     # White
-    c_sub = '#94A3B8'      # Light Gray
-    c_border = '#334155'   # Slate border
+    # Color Palette - Professional & Clean
+    c_blue = '#0284C7'    # Sky Blue (Inputs)
+    c_teal = '#0D9488'    # Teal (Calculated)
+    c_indigo = '#4F46E5'  # Indigo (Base Models)
+    c_green = '#059669'   # Green (Blending)
+    c_amber = '#D97706'   # Amber (Output)
+    c_box_bg = '#1E293B'  # Slate Box
 
-    def draw_box(x, y, w, h, title, subtitle, color, icon=""):
-        # Shadow/glow
-        shadow = patches.FancyBboxPatch((x-0.005, y-0.005), w+0.01, h+0.01,
-                                       boxstyle="round,pad=0.03", ec="none", fc="#1E293B", zorder=1)
-        ax.add_patch(shadow)
-        
-        # Main box
-        rect = patches.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02",
-                                     ec=color, fc="#1E293B", lw=2, zorder=2)
+    def draw_box(x, y, w, h, header_text, body_text, border_color):
+        # Card background
+        rect = patches.FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.015",
+                                     ec=border_color, fc=c_box_bg, lw=2, zorder=2)
         ax.add_patch(rect)
         
-        # Header banner inside
-        header_h = h * 0.35
-        header_rect = patches.FancyBboxPatch((x, y + h - header_h), w, header_h,
-                                           boxstyle="round,pad=0.01", ec="none", fc=color, zorder=3)
-        ax.add_patch(header_rect)
+        # Header strip
+        head_h = h * 0.32
+        header = patches.FancyBboxPatch((x, y + h - head_h), w, head_h,
+                                       boxstyle="round,pad=0.01", ec="none", fc=border_color, zorder=3)
+        ax.add_patch(header)
 
-        # Title
-        ax.text(x + w/2, y + h - header_h/2, title, color='#FFFFFF', fontsize=11,
+        # Header text
+        ax.text(x + w/2, y + h - head_h/2, header_text, color='#FFFFFF', fontsize=10.5,
                 fontweight='bold', ha='center', va='center', zorder=4)
 
-        # Subtitle / content
-        ax.text(x + w/2, y + (h - header_h)/2, subtitle, color=c_text, fontsize=9.5,
+        # Body text
+        ax.text(x + w/2, y + (h - head_h)/2, body_text, color='#FFFFFF', fontsize=9.5,
                 ha='center', va='center', zorder=4, multialignment='center')
 
     def draw_arrow(x1, y1, x2, y2, color='#38BDF8'):
         ax.annotate('', xy=(x2, y2), xytext=(x1, y1),
-                    arrowprops=dict(arrowstyle="->,head_width=0.4,head_length=0.6",
-                                  color=color, lw=2.5), zorder=5)
+                    arrowprops=dict(arrowstyle="->,head_width=0.35,head_length=0.5",
+                                  color=color, lw=2), zorder=5)
 
-    # 1. Inputs (Left)
-    ax.text(0.12, 0.92, "INPUT FEATURES", color='#38BDF8', fontsize=13, fontweight='bold', ha='center')
-    draw_box(0.02, 0.68, 0.20, 0.18, "Laboratory Inputs", "• Moisture (%)\n• Volatile Matter (%)\n• Standard Ash (%)", c_input)
-    
-    # 2. Domain Engineering (Middle Left)
-    ax.text(0.38, 0.92, "MASS BALANCE & CHEMISTRY", color='#2DD4BF', fontsize=13, fontweight='bold', ha='center')
-    draw_box(0.28, 0.68, 0.20, 0.18, "Feature Engineering", "• Fixed Carbon = 100 - Sum\n• Fuel Ratio = FC / VM\n• Zero-Leakage KNN Imputer", c_feat)
+    # Column Headers (Top)
+    headers = [
+        (0.11, "1. INPUTS", '#38BDF8'),
+        (0.29, "2. FORMULAS", '#2DD4BF'),
+        (0.51, "3. BASE MODELS", '#818CF8'),
+        (0.71, "4. BLENDING", '#34D399'),
+        (0.89, "5. PREDICTION", '#FBBF24')
+    ]
+    for x_pos, text, col in headers:
+        ax.text(x_pos, 0.90, text, color=col, fontsize=12, fontweight='bold', ha='center')
 
-    # 3. Base Models (Middle)
-    ax.text(0.65, 0.92, "LEVEL-0 BASE ESTIMATORS", color='#60A5FA', fontsize=13, fontweight='bold', ha='center')
-    draw_box(0.55, 0.72, 0.20, 0.15, "Random Forest", "200 Trees | max_depth: 15\nBagging Variance Reduction", c_model)
-    draw_box(0.55, 0.52, 0.20, 0.15, "XGBoost Regressor", "300 Trees | max_depth: 4\nGradient Boosted Residuals", c_model)
-    draw_box(0.55, 0.32, 0.20, 0.15, "Scaled SVR (RBF)", "TransformedTargetRegressor\nScales Target & Features", c_model)
+    # 1. Inputs (Col 1)
+    draw_box(0.02, 0.35, 0.18, 0.40, "Lab Inputs",
+             "• Moisture (%)\n• Volatile Matter (%)\n• Ash (%)", c_blue)
 
-    # 4. Meta-Learner (Middle Right)
-    ax.text(0.88, 0.92, "LEVEL-1 META LEARNER", color='#34D399', fontsize=13, fontweight='bold', ha='center')
-    draw_box(0.80, 0.52, 0.17, 0.18, "Ridge Meta-Model", "Optimal Out-of-Fold\nL2 Weight Blending\n(alpha = 0.0105)", c_meta)
+    # 2. Calculated Features (Col 2)
+    draw_box(0.20, 0.35, 0.18, 0.40, "Calculated Values",
+             "• Fixed Carbon\n  (100 - Moisture - VM - Ash)\n\n• Fuel Ratio\n  (Fixed Carbon / VM)", c_teal)
 
-    # 5. Output Prediction (Bottom Banner)
-    out_box = patches.FancyBboxPatch((0.28, 0.06), 0.44, 0.16, boxstyle="round,pad=0.02",
-                                    ec='#F59E0B', fc='#1E293B', lw=2.5, zorder=2)
-    ax.add_patch(out_box)
-    ax.text(0.50, 0.17, "FINAL PREDICTED GCV (Kcal/kg)", color='#F59E0B', fontsize=12, fontweight='bold', ha='center')
-    ax.text(0.50, 0.10, "Universal: 150.28 RMSE (2.18% CV) | Bituminous: 134.18 RMSE (1.91% CV)\n+ SHAP Waterfall Chemical Attribution",
-            color='#FFFFFF', fontsize=9.5, ha='center', va='center')
+    # 3. Base Models (Col 3) - Stacked vertically in the center
+    draw_box(0.41, 0.62, 0.20, 0.18, "Random Forest", "200 decision trees\nAverages predictions", c_indigo)
+    draw_box(0.41, 0.41, 0.20, 0.18, "XGBoost", "Gradient boosted trees\nLearns complex patterns", c_indigo)
+    draw_box(0.41, 0.20, 0.20, 0.18, "Support Vector (SVR)", "Finds best-fit line\nwith normalized data", c_indigo)
 
-    # Connecting Arrows
-    draw_arrow(0.22, 0.77, 0.28, 0.77, '#38BDF8')
-    draw_arrow(0.48, 0.77, 0.55, 0.795, '#2DD4BF')
-    draw_arrow(0.48, 0.77, 0.55, 0.595, '#2DD4BF')
-    draw_arrow(0.48, 0.77, 0.55, 0.395, '#2DD4BF')
+    # 4. Meta-Model Blending (Col 4)
+    draw_box(0.64, 0.35, 0.16, 0.40, "Ridge Blending",
+             "Combines predictions\nfrom all 3 models\nusing learned weights", c_green)
 
-    draw_arrow(0.75, 0.795, 0.80, 0.65, '#60A5FA')
-    draw_arrow(0.75, 0.595, 0.80, 0.61, '#60A5FA')
-    draw_arrow(0.75, 0.395, 0.80, 0.57, '#60A5FA')
+    # 5. Final Output (Col 5)
+    draw_box(0.82, 0.35, 0.16, 0.40, "Final GCV",
+             "Predicted Energy Value\n(Kcal/kg)\n\n+ SHAP graph explaining\nthe contribution of each feature", c_amber)
 
-    # Arrow from Meta to Final Output
-    draw_arrow(0.885, 0.52, 0.65, 0.22, '#34D399')
+    # Smooth, balanced left-to-right arrows
+    # Col 1 -> Col 2
+    draw_arrow(0.20, 0.55, 0.20, 0.55, '#38BDF8')  # adjusted below
+
+    # Clear and direct connections
+    draw_arrow(0.20, 0.55, 0.20 + 0.00, 0.55, '#38BDF8')
+
+    # Real connection points:
+    draw_arrow(0.02 + 0.18, 0.55, 0.20, 0.55, '#38BDF8')
+
+    # Col 2 -> Col 3 (3 branches)
+    draw_arrow(0.20 + 0.18, 0.55, 0.41, 0.71, '#2DD4BF')
+    draw_arrow(0.20 + 0.18, 0.55, 0.41, 0.50, '#2DD4BF')
+    draw_arrow(0.20 + 0.18, 0.55, 0.41, 0.29, '#2DD4BF')
+
+    # Col 3 -> Col 4 (3 converging)
+    draw_arrow(0.41 + 0.20, 0.71, 0.64, 0.55, '#818CF8')
+    draw_arrow(0.41 + 0.20, 0.50, 0.64, 0.55, '#818CF8')
+    draw_arrow(0.41 + 0.20, 0.29, 0.64, 0.55, '#818CF8')
+
+    # Col 4 -> Col 5 (Direct)
+    draw_arrow(0.64 + 0.16, 0.55, 0.82, 0.55, '#34D399')
+
+    # Bottom summary tag
+    summary_box = patches.FancyBboxPatch((0.20, 0.04), 0.60, 0.09, boxstyle="round,pad=0.01",
+                                        ec='#334155', fc='#1E293B', lw=1, zorder=2)
+    ax.add_patch(summary_box)
+    ax.text(0.50, 0.085, "Full Pipeline: Inputs  →  Formulas  →  3 Base Models  →  Blended Output",
+            color='#E2E8F0', fontsize=10.5, fontweight='bold', ha='center', va='center')
 
     plt.tight_layout()
     out_img = 'models/architecture_diagram.png'
     plt.savefig(out_img, dpi=300, facecolor=fig.get_facecolor(), edgecolor='none', bbox_inches='tight')
     plt.close()
-    print(f"Generated architecture diagram at {out_img}")
+    print(f"Clean symmetrical architecture diagram saved to {out_img}")
 
 if __name__ == '__main__':
-    draw_architecture()
+    draw_clean_architecture()
