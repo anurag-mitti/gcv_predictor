@@ -170,7 +170,7 @@ with tab_universal:
 
         st.markdown("---")
         with st.expander("🔍 View Universal Model Diagnostics", expanded=False):
-            st.image("models/actual_vs_predicted.png", caption="Universal Actual vs Predicted GCV", use_column_width=True)
+            st.image("models/actual_vs_predicted.png", caption="Universal Actual vs Predicted GCV", use_container_width=True)
 
     with col_u_results:
         input_data_u = pd.DataFrame({
@@ -252,7 +252,7 @@ with tab_bituminous:
 
         st.markdown("---")
         with st.expander("🔍 View Bituminous Model Diagnostics", expanded=False):
-            st.image("models/actual_vs_predicted_bituminous.png", caption="Bituminous Actual vs Predicted GCV", use_column_width=True)
+            st.image("models/actual_vs_predicted_bituminous.png", caption="Bituminous Actual vs Predicted GCV", use_container_width=True)
 
     with col_b_results:
         input_data_b = pd.DataFrame({
