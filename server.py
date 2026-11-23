@@ -1,20 +1,26 @@
 import os
+import io
+import base64
 import joblib
 import pandas as pd
 import numpy as np
 import shap
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
-app = FastAPI(title="Coal GCV Analytics Core API", version="2.8.4")
+app = FastAPI(title="Coal GCV Predictor API")
 
 # ==========================================
-# MODEL LOADERS & EVALUATORS
+# LOAD MODELS & EXPLAINERS
 # ==========================================
 print("Loading Universal Model...")
 model_u = joblib.load('models/ensemble_gcv.joblib')
@@ -24,7 +30,6 @@ print("Loading Bituminous Model...")
 model_b = joblib.load('models/ensemble_gcv_bituminous.joblib')
 explainer_b = shap.TreeExplainer(model_b.named_estimators_['xgb'])
 
-print("Fitting k-NN Local Evaluators...")
 FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel_Ratio']
 
 # Universal Evaluator
@@ -43,7 +48,7 @@ y_pred_all_b = model_b.predict(X_b)
 scaler_b = StandardScaler().fit(X_b)
 nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transform(X_b))
 
-print("All Models and Manifolds Initialized Successfully!")
+print("Models and local evaluators loaded.")
 
 def compute_local_metrics(sample_df, scaler, nn, y_true, y_preds):
     sample_scaled = scaler.transform(sample_df)
@@ -74,34 +79,42 @@ def compute_local_metrics(sample_df, scaler, nn, y_true, y_preds):
         'cv_score': cv_score
     }
 
-def get_astm_rank(fc, vm, m):
-    if fc >= 86.0:
-        return 'Anthracite'
-    elif fc >= 78.0:
-        return 'Low Volatile Bituminous'
-    elif fc >= 69.0:
-        return 'Medium Volatile Bituminous'
-    elif fc >= 50.0 and vm >= 31.0:
-        return 'High Volatile A Bituminous'
-    elif m > 20.0:
-        return 'Sub-Bituminous C / Lignite'
-    elif m > 12.0:
-        return 'Sub-Bituminous B'
-    else:
-        return 'High Volatile Bituminous'
+def render_shap_waterfall_b64(calibrated_shap, raw_base, input_df):
+    calibrated_exp = shap.Explanation(
+        values=calibrated_shap,
+        base_values=raw_base,
+        data=input_df.values[0],
+        feature_names=input_df.columns.tolist()
+    )
+
+    plt.style.use('dark_background')
+    fig = plt.figure(figsize=(9, 4.8), dpi=140)
+    shap.plots.waterfall(calibrated_exp, show=False)
+
+    for axis in fig.axes:
+        labels = [t.get_text() for t in axis.get_xticklabels()]
+        if any('=' in l or '$' in l for l in labels):
+            axis.set_xticklabels([])
+
+    plt.tight_layout()
+    fig.patch.set_facecolor('#0F131C')
+    for axis in fig.axes:
+        axis.set_facecolor('#0F131C')
+
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png', bbox_inches='tight', facecolor=fig.get_facecolor(), edgecolor='none', dpi=140)
+    plt.close(fig)
+    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
 
 # ==========================================
-# REQUEST / RESPONSE SCHEMAS
+# API SCHEMAS & ENDPOINTS
 # ==========================================
 class PredictionRequest(BaseModel):
     moisture: float = Field(..., ge=0.0, le=45.0)
     volatile_matter: float = Field(..., ge=0.0, le=65.0)
     ash: float = Field(..., ge=0.0, le=60.0)
-    model_type: str = Field("universal", description="universal or bituminous")
+    model_type: str = Field("normal", description="normal or bituminous")
 
-# ==========================================
-# API ENDPOINTS
-# ==========================================
 @app.post("/api/predict")
 def predict_gcv(req: PredictionRequest):
     moisture = float(req.moisture)
@@ -111,7 +124,7 @@ def predict_gcv(req: PredictionRequest):
 
     fixed_carbon = 100.0 - (moisture + vm + ash)
     if fixed_carbon < 0.0:
-        raise HTTPException(status_code=400, detail="Mass balance exceeds 100%. Moisture + VM + Ash cannot exceed 100%.")
+        raise HTTPException(status_code=400, detail="Mass balance exceeds 100%. Lower your inputs.")
 
     fuel_ratio = fixed_carbon / vm if vm > 0 else 0.0
 
@@ -152,96 +165,39 @@ def predict_gcv(req: PredictionRequest):
     # Local Evaluation on 50 nearest neighbors
     loc = compute_local_metrics(input_df, scaler, nn, y_all, y_preds)
 
-    astm_rank = get_astm_rank(fixed_carbon, vm, moisture)
-
-    # Inferred Ultimate Proxies (empirical coal chemistry equations)
-    c_est = max(30.0, min(92.0, (0.78 * fixed_carbon) + (0.52 * vm) - (0.08 * ash)))
-    h_est = max(1.5, min(6.5, (0.085 * vm) + (0.015 * fixed_carbon) - (0.012 * moisture)))
-    n_est = max(0.8, min(2.2, 1.15 + (0.005 * fixed_carbon)))
-    s_est = max(0.3, min(6.0, ash * 0.048))
-    o_est = max(1.0, 100.0 - (c_est + h_est + n_est + s_est + ash))
+    # Generate Authentic SHAP Waterfall Plot
+    waterfall_b64 = render_shap_waterfall_b64(calibrated_shap, raw_base, input_df)
 
     net_attribution = pred_val - raw_base
-    pct_delta = (net_attribution / raw_base) * 100.0 if raw_base > 0 else 0.0
 
     return {
         "prediction": {
-            "gcv_kcal": round(pred_val, 2),
-            "mj_kg": round(pred_val * 0.004184, 2),
-            "btu_lb": int(round(pred_val * 1.8)),
-            "ci_low": round(pred_val - loc['rmse'] * 0.6, 2),
-            "ci_high": round(pred_val + loc['rmse'] * 0.6, 2)
+            "gcv_kcal": round(pred_val, 2)
         },
         "chemistry": {
             "moisture": round(moisture, 2),
             "volatile_matter": round(vm, 2),
             "ash": round(ash, 2),
             "fixed_carbon": round(fixed_carbon, 2),
-            "fuel_ratio": round(fuel_ratio, 3),
-            "astm_rank": astm_rank,
-            "proxies": {
-                "c": round(c_est, 2),
-                "h": round(h_est, 2),
-                "n": round(n_est, 2),
-                "s": round(s_est, 2),
-                "o": round(o_est, 2)
-            }
+            "fuel_ratio": round(fuel_ratio, 2)
         },
         "baseline": {
             "gcv_kcal": round(raw_base, 2),
-            "net_delta": round(net_attribution, 2),
-            "pct_delta": round(pct_delta, 2)
+            "net_delta": round(net_attribution, 2)
         },
         "shap": {
-            "fixed_carbon": round(float(calibrated_shap[3]), 2),
-            "volatile_matter": round(float(calibrated_shap[1]), 2),
-            "moisture": round(float(calibrated_shap[0]), 2),
-            "ash": round(float(calibrated_shap[2]), 2),
-            "fuel_ratio": round(float(calibrated_shap[4]), 2),
-            "sum_shap": round(float(np.sum(calibrated_shap)), 2),
-            "exact_match": bool(np.isclose(raw_base + np.sum(calibrated_shap), pred_val))
+            "sum_shap": round(float(np.sum(calibrated_shap)), 2)
         },
         "local_metrics": {
             "confidence": round(loc['conf'], 1),
-            "rmse": round(loc['rmse'], 2),
-            "mae": round(loc['mae'], 2),
-            "r2": round(loc['r2'], 3),
+            "rmse": round(loc['rmse'], 1),
+            "mae": round(loc['mae'], 1),
+            "r2": round(loc['r2'], 2),
             "cv_score": round(loc['cv_score'], 2)
-        }
-    }
-
-@app.get("/api/benchmarks")
-def get_benchmarks():
-    return {
-        "universal": {
-            "samples": 5151,
-            "rmse": 150.28,
-            "mae": 105.97,
-            "r2": 0.96,
-            "cv_pct": 2.18,
-            "models": [
-                {"name": "Stacking Meta-Ensemble", "rmse": 150.28, "mae": 105.97, "r2": 0.96, "latency": "3.8 ms"},
-                {"name": "XGBoost Regressor", "rmse": 155.12, "mae": 109.80, "r2": 0.957, "latency": "1.2 ms"},
-                {"name": "Random Forest (200 Trees)", "rmse": 164.40, "mae": 115.30, "r2": 0.952, "latency": "8.5 ms"},
-                {"name": "Support Vector Regressor", "rmse": 182.90, "mae": 131.20, "r2": 0.938, "latency": "14.2 ms"}
-            ]
         },
-        "bituminous": {
-            "samples": 4494,
-            "rmse": 134.18,
-            "mae": 96.29,
-            "r2": 0.95,
-            "cv_pct": 1.91,
-            "models": [
-                {"name": "Bituminous Stacking Ensemble", "rmse": 134.18, "mae": 96.29, "r2": 0.953, "latency": "3.4 ms"},
-                {"name": "XGBoost Regressor", "rmse": 138.90, "mae": 99.40, "r2": 0.950, "latency": "1.1 ms"},
-                {"name": "Random Forest (200 Trees)", "rmse": 145.20, "mae": 104.10, "r2": 0.945, "latency": "7.9 ms"},
-                {"name": "Support Vector Regressor", "rmse": 168.50, "mae": 122.40, "r2": 0.929, "latency": "12.8 ms"}
-            ]
-        }
+        "waterfall_image_b64": waterfall_b64
     }
 
-# Mount static and models directories
 os.makedirs('static', exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.mount("/models", StaticFiles(directory="models"), name="models")
