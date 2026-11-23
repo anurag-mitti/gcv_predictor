@@ -60,6 +60,14 @@
     input[type=range]::-webkit-slider-thumb:hover {
       transform: scale(1.2);
     }
+    /* Hide any unintended scrollbars */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 
@@ -108,7 +116,7 @@
               <label for="slider-moisture" class="text-xs text-slate-300 font-medium">Moisture (%)</label>
               <input id="num-moisture" type="number" step="0.1" min="0" max="40" class="w-16 bg-surface-card border border-surface-border rounded px-2 py-0.5 text-right font-mono text-accent text-xs font-semibold focus:outline-none focus:border-accent" value="10.0"/>
             </div>
-            <input id="slider-moisture" type="range" min="0" max="40" step="0.1" value="10.0" class="w-full" oninput="onSliderChange()"/>
+            <input id="slider-moisture" type="range" min="0" max="40" step="0.1" value="10.0" class="w-full" oninput="onSliderDrag()"/>
           </div>
 
           <!-- Volatile Matter Slider -->
@@ -117,7 +125,7 @@
               <label for="slider-vm" class="text-xs text-slate-300 font-medium">Volatile Matter (%)</label>
               <input id="num-vm" type="number" step="0.1" min="0" max="60" class="w-16 bg-surface-card border border-surface-border rounded px-2 py-0.5 text-right font-mono text-accent text-xs font-semibold focus:outline-none focus:border-accent" value="25.0"/>
             </div>
-            <input id="slider-vm" type="range" min="0" max="60" step="0.1" value="25.0" class="w-full" oninput="onSliderChange()"/>
+            <input id="slider-vm" type="range" min="0" max="60" step="0.1" value="25.0" class="w-full" oninput="onSliderDrag()"/>
           </div>
 
           <!-- Standard Ash Slider -->
@@ -126,7 +134,7 @@
               <label for="slider-ash" class="text-xs text-slate-300 font-medium">Standard Ash (%)</label>
               <input id="num-ash" type="number" step="0.1" min="0" max="55" class="w-16 bg-surface-card border border-surface-border rounded px-2 py-0.5 text-right font-mono text-accent text-xs font-semibold focus:outline-none focus:border-accent" value="15.0"/>
             </div>
-            <input id="slider-ash" type="range" min="0" max="55" step="0.1" value="15.0" class="w-full" oninput="onSliderChange()"/>
+            <input id="slider-ash" type="range" min="0" max="55" step="0.1" value="15.0" class="w-full" oninput="onSliderDrag()"/>
           </div>
 
           <!-- Material Balance Stacked Bar -->
@@ -136,10 +144,10 @@
               <span class="text-positive">SUM = 100.0%</span>
             </div>
             <div class="w-full h-2.5 rounded bg-canvas border border-surface-border flex overflow-hidden">
-              <div id="bar-moisture" class="bg-negative/80 transition-all duration-150" style="width: 10%" title="Moisture"></div>
-              <div id="bar-vm" class="bg-positive/80 transition-all duration-150" style="width: 25%" title="Volatile Matter"></div>
-              <div id="bar-ash" class="bg-slate-500 transition-all duration-150" style="width: 15%" title="Standard Ash"></div>
-              <div id="bar-fc" class="bg-accent transition-all duration-150" style="width: 50%" title="Fixed Carbon"></div>
+              <div id="bar-moisture" class="bg-negative/80 transition-all duration-75" style="width: 10%" title="Moisture"></div>
+              <div id="bar-vm" class="bg-positive/80 transition-all duration-75" style="width: 25%" title="Volatile Matter"></div>
+              <div id="bar-ash" class="bg-slate-500 transition-all duration-75" style="width: 15%" title="Standard Ash"></div>
+              <div id="bar-fc" class="bg-accent transition-all duration-75" style="width: 50%" title="Fixed Carbon"></div>
             </div>
             <div class="flex justify-between font-mono text-[10px] text-muted-light">
               <span>M: <strong id="lbl-m" class="text-white">10.0%</strong></span>
@@ -180,38 +188,83 @@
           </div>
         </div>
 
-        <!-- Local Sample Performance Metrics -->
-        <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-sm flex flex-col gap-3">
-          <div class="border-b border-surface-border pb-2">
-            <h2 class="text-xs font-mono font-semibold tracking-wider uppercase text-white">Local Sample Performance</h2>
-            <span class="text-xs text-muted">Evaluated on the 50 closest laboratory samples</span>
+        <!-- Model & Sample Performance Metrics -->
+        <div class="bg-surface border border-surface-border rounded-xl p-5 shadow-sm flex flex-col gap-4">
+          
+          <!-- 1. LOCAL SAMPLE PERFORMANCE (UP) -->
+          <div class="flex flex-col gap-2.5">
+            <div class="flex items-center justify-between border-b border-surface-border pb-2">
+              <div>
+                <h2 class="text-xs font-mono font-semibold tracking-wider uppercase text-white">Local Sample Performance</h2>
+                <span class="text-[11px] text-muted">Evaluated dynamically on closest 50 laboratory samples</span>
+              </div>
+              <span class="text-[10px] font-mono text-accent bg-accent/10 border border-accent/30 px-2 py-0.5 rounded">Dynamic</span>
+            </div>
+
+            <div class="grid grid-cols-5 gap-2 text-center font-mono">
+              <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">Conf.</span>
+                <span id="val-conf-score" class="text-xs font-bold text-positive mt-1 block">90.5%</span>
+              </div>
+              <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">RMSE</span>
+                <span id="val-local-rmse" class="text-xs font-bold text-white mt-1 block">298.0</span>
+              </div>
+              <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">MAE</span>
+                <span id="val-local-mae" class="text-xs font-bold text-white mt-1 block">240.2</span>
+              </div>
+              <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">R²</span>
+                <span id="val-local-r2" class="text-xs font-bold text-white mt-1 block">0.68</span>
+              </div>
+              <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">CV</span>
+                <span id="val-local-cv" class="text-xs font-bold text-accent mt-1 block">4.83%</span>
+              </div>
+            </div>
+            <span class="text-[11px] text-muted leading-tight">
+              Local metrics recalculate continuously for each individual sample execution as you move the sliders.
+            </span>
           </div>
 
-          <div class="grid grid-cols-5 gap-2 text-center font-mono">
-            <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
-              <span class="text-[10px] text-muted block uppercase">Conf.</span>
-              <span id="val-conf-score" class="text-xs font-bold text-positive mt-1 block">90.5%</span>
+          <!-- 2. GLOBAL MODEL PERFORMANCE (BELOW) -->
+          <div class="flex flex-col gap-2.5 pt-2 border-t border-surface-border">
+            <div class="flex items-center justify-between border-b border-surface-border/60 pb-2">
+              <div>
+                <h2 class="text-xs font-mono font-semibold tracking-wider uppercase text-slate-300">Global Model Performance</h2>
+                <span class="text-[11px] text-muted" id="lbl-global-samples">Full dataset benchmark (5,151 laboratory samples)</span>
+              </div>
+              <span class="text-[10px] font-mono text-positive bg-positive/10 border border-positive/30 px-2 py-0.5 rounded">Benchmark</span>
             </div>
-            <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
-              <span class="text-[10px] text-muted block uppercase">RMSE</span>
-              <span id="val-local-rmse" class="text-xs font-bold text-white mt-1 block">298.0</span>
+
+            <div class="grid grid-cols-5 gap-2 text-center font-mono">
+              <div class="bg-surface-card/70 p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">Samples</span>
+                <span id="val-global-samples" class="text-xs font-bold text-slate-300 mt-1 block">5,151</span>
+              </div>
+              <div class="bg-surface-card/70 p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">RMSE</span>
+                <span id="val-global-rmse" class="text-xs font-bold text-positive mt-1 block">139.0</span>
+              </div>
+              <div class="bg-surface-card/70 p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">MAE</span>
+                <span id="val-global-mae" class="text-xs font-bold text-white mt-1 block">98.5</span>
+              </div>
+              <div class="bg-surface-card/70 p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">R²</span>
+                <span id="val-global-r2" class="text-xs font-bold text-positive mt-1 block">0.966</span>
+              </div>
+              <div class="bg-surface-card/70 p-2 rounded-lg border border-surface-border">
+                <span class="text-[10px] text-muted block uppercase">CV</span>
+                <span id="val-global-cv" class="text-xs font-bold text-accent mt-1 block">2.02%</span>
+              </div>
             </div>
-            <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
-              <span class="text-[10px] text-muted block uppercase">MAE</span>
-              <span id="val-local-mae" class="text-xs font-bold text-white mt-1 block">240.2</span>
-            </div>
-            <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
-              <span class="text-[10px] text-muted block uppercase">R²</span>
-              <span id="val-local-r2" class="text-xs font-bold text-white mt-1 block">0.68</span>
-            </div>
-            <div class="bg-surface-card p-2 rounded-lg border border-surface-border">
-              <span class="text-[10px] text-muted block uppercase">CV</span>
-              <span id="val-local-cv" class="text-xs font-bold text-accent mt-1 block">4.83%</span>
-            </div>
+            <span class="text-[11px] text-muted leading-tight">
+              5-fold cross-validated benchmark of the stacking ensemble on all samples.
+            </span>
           </div>
-          <span class="text-[11px] text-muted leading-tight">
-            Local metrics update dynamically for each individual sample execution as you move the sliders.
-          </span>
+
         </div>
 
       </div>
@@ -219,7 +272,7 @@
       <!-- ==================== RIGHT COLUMN: PREDICTION & WATERFALL ==================== -->
       <div class="lg:col-span-7 flex flex-col gap-5">
         
-        <!-- PREDICTION HERO CARD -->
+        <!-- 1. PREDICTION HERO CARD -->
         <div class="bg-surface border border-surface-border rounded-xl p-6 shadow-sm flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono uppercase tracking-wider text-muted">Predicted Gross Calorific Value</span>
@@ -259,26 +312,7 @@
           </div>
         </div>
 
-        <!-- ADDITIVE FORMULA VERIFICATION BOX (NO SCROLLBAR) -->
-        <div class="bg-surface border border-surface-border rounded-xl p-4 shadow-sm flex flex-col gap-2">
-          <span class="text-xs font-mono font-semibold uppercase text-accent tracking-wider">Additive Formula Verification</span>
-          
-          <!-- Clean Multi-line Responsive Calculation (Zero Horizontal Scrollbar) -->
-          <div class="bg-canvas border border-surface-border rounded-lg p-3 font-mono text-xs text-slate-200 flex flex-col gap-1.5 leading-relaxed">
-            <div class="text-muted">
-              Predicted GCV = Baseline GCV + Sum(SHAP weights)
-            </div>
-            <div id="val-additive-math" class="text-white font-medium flex flex-wrap items-center gap-x-2">
-              <span>5,744.14 Kcal/kg = 6,892.99 Kcal/kg + (-1,148.85 Kcal/kg)</span>
-            </div>
-          </div>
-          
-          <p class="text-xs text-muted leading-relaxed">
-            <strong class="text-slate-300">Baseline GCV (E[f(X)]):</strong> Expected mean heating value across the training dataset prior to observing this sample's lab features.
-          </p>
-        </div>
-
-        <!-- EXPLANABILITY TABS -->
+        <!-- 2. SHAP VISUALIZATIONS (PUT ABOVE FORMULA) -->
         <div class="bg-surface border border-surface-border rounded-xl shadow-sm flex flex-col overflow-hidden">
           
           <!-- Tabs Navigation -->
@@ -296,11 +330,16 @@
 
           <div class="p-5">
 
-            <!-- TAB 1: AUTHENTIC SHAP WATERFALL PLOT -->
+            <!-- TAB 1: AUTHENTIC SHAP STEPPED WATERFALL PLOT -->
             <div id="tab-pane-waterfall" class="flex flex-col gap-3">
-              <span class="text-xs text-muted">Waterfall decomposition starting from Baseline GCV to Predicted GCV:</span>
-              <div class="border border-surface-border rounded-lg overflow-hidden bg-canvas flex items-center justify-center p-2 min-h-[300px]">
-                <img id="img-waterfall" src="" alt="SHAP Waterfall Plot" class="w-full h-auto rounded transition-opacity duration-200"/>
+              <div class="flex items-center justify-between text-xs font-mono text-muted">
+                <span>Waterfall decomposition starting from Baseline GCV to Predicted GCV:</span>
+                <span class="text-muted-light">Real-Time Vector SVG</span>
+              </div>
+              
+              <!-- Responsive SVG Waterfall Container -->
+              <div id="waterfall-svg-container" class="border border-surface-border rounded-lg overflow-hidden bg-canvas flex items-center justify-center p-2 min-h-[300px]">
+                <!-- SVG dynamically injected here -->
               </div>
             </div>
 
@@ -308,7 +347,7 @@
             <div id="tab-pane-summary" class="hidden flex-col gap-3">
               <div class="bg-surface-card border border-surface-border rounded-lg p-3 text-xs text-muted-light leading-relaxed">
                 <strong class="text-white">Feature Directions in the SHAP Summary Plot:</strong><br>
-                - <span class="text-negative font-semibold">Standard Ash & Moisture have Negative Weights</span>: Non-combustibles that pull GCV down. Ash absorbs sensible heat while Moisture absorbs 540 cal/g latent heat of vaporization.<br>
+                - <span class="text-negative font-semibold">Standard Ash & Moisture have Negative Weights</span>: Non-combustibles that reduce GCV. Ash absorbs sensible heat while Moisture absorbs 540 cal/g latent heat of vaporization.<br>
                 - <span class="text-positive font-semibold">Fixed Carbon & Volatile Matter have Positive Weights</span>: Primary thermal energy producers in coal combustion.
               </div>
               <div class="border border-surface-border rounded-lg overflow-hidden bg-canvas p-2">
@@ -375,6 +414,28 @@
           </div>
         </div>
 
+        <!-- 3. ADDITIVE FORMULA VERIFICATION BOX (PUT BELOW SHAP, ZERO HORIZONTAL SCROLLBAR) -->
+        <div class="bg-surface border border-surface-border rounded-xl p-4 shadow-sm flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono font-semibold uppercase text-accent tracking-wider">Additive Formula Verification</span>
+            <span class="text-[11px] font-mono text-muted">Sum(SHAP) = f(X) - E[f(X)]</span>
+          </div>
+          
+          <!-- Clean Multi-line Responsive Calculation (Zero Horizontal Scrollbar) -->
+          <div class="bg-canvas border border-surface-border rounded-lg p-3 font-mono text-xs flex flex-col gap-1.5 leading-relaxed overflow-hidden">
+            <div class="text-muted text-[11px]">
+              Predicted GCV = Baseline GCV + Sum(SHAP Weights)
+            </div>
+            <div id="val-additive-math" class="text-white font-medium break-words leading-normal">
+              5,744.14 Kcal/kg = 6,892.99 Kcal/kg + (-1,148.85 Kcal/kg)
+            </div>
+          </div>
+          
+          <p class="text-[11px] text-muted leading-relaxed">
+            <strong class="text-slate-300">Baseline GCV (E[f(X)]):</strong> Expected mean heating value across the training dataset prior to observing this sample's lab features.
+          </p>
+        </div>
+
       </div>
 
     </div>
@@ -383,13 +444,50 @@
   <!-- JAVASCRIPT ENGINE -->
   <script>
     let currentModel = 'normal';
-    let debounceTimer = null;
+    let isFetching = false;
+    let pendingPayload = null;
 
-    function onSliderChange() {
-      document.getElementById('num-moisture').value = document.getElementById('slider-moisture').value;
-      document.getElementById('num-vm').value = document.getElementById('slider-vm').value;
-      document.getElementById('num-ash').value = document.getElementById('slider-ash').value;
-      triggerPrediction();
+    // Called on every micro-movement as sliders are dragged
+    function onSliderDrag() {
+      let m = parseFloat(document.getElementById('slider-moisture').value) || 0;
+      let vm = parseFloat(document.getElementById('slider-vm').value) || 0;
+      let ash = parseFloat(document.getElementById('slider-ash').value) || 0;
+
+      // Keep mass balance strictly <= 100%
+      if (m + vm + ash > 99.5) {
+        ash = Math.max(0, 99.5 - (m + vm));
+        document.getElementById('slider-ash').value = ash.toFixed(1);
+      }
+
+      // Sync number input boxes
+      document.getElementById('num-moisture').value = m.toFixed(1);
+      document.getElementById('num-vm').value = vm.toFixed(1);
+      document.getElementById('num-ash').value = ash.toFixed(1);
+
+      // Instant 60 FPS client-side feedback for mass balance and proximate features
+      const fc = Math.max(0, 100.0 - (m + vm + ash));
+      const fr = vm > 0 ? (fc / vm) : 0;
+
+      document.getElementById('val-fixed-carbon').innerText = fc.toFixed(2) + '%';
+      document.getElementById('val-fuel-ratio').innerText = fr.toFixed(2);
+
+      document.getElementById('bar-moisture').style.width = m + '%';
+      document.getElementById('bar-vm').style.width = vm + '%';
+      document.getElementById('bar-ash').style.width = ash + '%';
+      document.getElementById('bar-fc').style.width = fc + '%';
+
+      document.getElementById('lbl-m').innerText = m.toFixed(1) + '%';
+      document.getElementById('lbl-vm').innerText = vm.toFixed(1) + '%';
+      document.getElementById('lbl-ash').innerText = ash.toFixed(1) + '%';
+      document.getElementById('lbl-fc').innerText = fc.toFixed(1) + '%';
+
+      // Stream prediction request continuously without debounce pausing
+      dispatchStream({
+        moisture: m,
+        volatile_matter: vm,
+        ash: ash,
+        model_type: currentModel
+      });
     }
 
     // Number input synchronization
@@ -398,7 +496,7 @@
       const slider = document.getElementById('slider-' + param);
       num.addEventListener('input', (e) => {
         slider.value = e.target.value;
-        triggerPrediction();
+        onSliderDrag();
       });
     });
 
@@ -423,7 +521,7 @@
         imgBeeswarm.src = "/models/shap_summary.png";
         imgParity.src = "/models/actual_vs_predicted.png";
       }
-      triggerPrediction();
+      onSliderDrag();
     }
 
     function switchTab(tab) {
@@ -449,39 +547,37 @@
       }
     }
 
-    function triggerPrediction() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(runPrediction, 40);
+    // In-flight streaming loop: fires continuously while user drags sliders
+    function dispatchStream(payload) {
+      if (isFetching) {
+        pendingPayload = payload;
+        return;
+      }
+      executeStream(payload);
     }
 
-    async function runPrediction() {
-      let m = parseFloat(document.getElementById('slider-moisture').value) || 0;
-      let vm = parseFloat(document.getElementById('slider-vm').value) || 0;
-      let ash = parseFloat(document.getElementById('slider-ash').value) || 0;
-
-      if (m + vm + ash > 99.5) {
-        ash = Math.max(0, 99.5 - (m + vm));
-        document.getElementById('slider-ash').value = ash.toFixed(1);
-        document.getElementById('num-ash').value = ash.toFixed(1);
-      }
-
+    async function executeStream(payload) {
+      isFetching = true;
       try {
         const res = await fetch('/api/predict', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            moisture: m,
-            volatile_matter: vm,
-            ash: ash,
-            model_type: currentModel
-          })
+          body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("API failed");
-        const data = await res.json();
-        renderData(data);
+        if (res.ok) {
+          const data = await res.json();
+          renderData(data);
+        }
       } catch (err) {
-        console.error(err);
+        console.error("Stream prediction error:", err);
+      } finally {
+        isFetching = false;
+        if (pendingPayload) {
+          const next = pendingPayload;
+          pendingPayload = null;
+          executeStream(next);
+        }
       }
     }
 
@@ -492,21 +588,10 @@
       const shap = data.shap;
       const loc = data.local_metrics;
 
-      // Chemistry
+      // Chemistry readouts
       document.getElementById('val-fixed-carbon').innerText = chem.fixed_carbon.toFixed(2) + '%';
       document.getElementById('val-fuel-ratio').innerText = chem.fuel_ratio.toFixed(2);
       document.getElementById('val-astm-rank').innerText = chem.astm_rank;
-
-      // Stacked Bar
-      document.getElementById('bar-moisture').style.width = chem.moisture + '%';
-      document.getElementById('bar-vm').style.width = chem.volatile_matter + '%';
-      document.getElementById('bar-ash').style.width = chem.ash + '%';
-      document.getElementById('bar-fc').style.width = chem.fixed_carbon + '%';
-
-      document.getElementById('lbl-m').innerText = chem.moisture.toFixed(1) + '%';
-      document.getElementById('lbl-vm').innerText = chem.volatile_matter.toFixed(1) + '%';
-      document.getElementById('lbl-ash').innerText = chem.ash.toFixed(1) + '%';
-      document.getElementById('lbl-fc').innerText = chem.fixed_carbon.toFixed(1) + '%';
 
       // Proxies
       document.getElementById('proxy-c').innerText = chem.proxies.c.toFixed(1) + '%';
@@ -515,12 +600,23 @@
       document.getElementById('proxy-s').innerText = chem.proxies.s.toFixed(1) + '%';
       document.getElementById('proxy-o').innerText = chem.proxies.o.toFixed(1) + '%';
 
-      // Dynamic Local Metrics
+      // Dynamic Local Metrics (updates for each sample execution)
       document.getElementById('val-conf-score').innerText = loc.confidence.toFixed(1) + '%';
       document.getElementById('val-local-rmse').innerText = loc.rmse.toFixed(1);
       document.getElementById('val-local-mae').innerText = loc.mae.toFixed(1);
       document.getElementById('val-local-r2').innerText = loc.r2.toFixed(2);
       document.getElementById('val-local-cv').innerText = loc.cv_score.toFixed(2) + '%';
+
+      // Global Benchmark Metrics (updates when model switches or loads)
+      if (data.global_metrics) {
+        const glob = data.global_metrics;
+        document.getElementById('val-global-samples').innerText = glob.samples.toLocaleString('en-US');
+        document.getElementById('val-global-rmse').innerText = glob.rmse.toFixed(1);
+        document.getElementById('val-global-mae').innerText = glob.mae.toFixed(1);
+        document.getElementById('val-global-r2').innerText = glob.r2.toFixed(3);
+        document.getElementById('val-global-cv').innerText = glob.cv_score.toFixed(2) + '%';
+        document.getElementById('lbl-global-samples').innerText = `Full dataset benchmark (${glob.samples.toLocaleString('en-US')} laboratory samples)`;
+      }
 
       // Hero Prediction Card
       document.getElementById('val-hero-gcv').innerText = Math.round(pred.gcv_kcal).toLocaleString('en-US');
@@ -535,19 +631,150 @@
       netDeltaEl.innerText = sign + base.net_delta.toFixed(2) + ' Kcal/kg';
       netDeltaEl.className = "font-bold " + (base.net_delta >= 0 ? 'text-positive' : 'text-negative');
 
-      // Additive Formula (clean layout, zero scrollbars)
+      // Additive Formula (clean layout, zero horizontal scrollbar)
       const shapSign = shap.sum_shap >= 0 ? '+' : '';
-      document.getElementById('val-additive-math').innerHTML = 
-        `<span>${pred.gcv_kcal.toFixed(2)} Kcal/kg = ${base.gcv_kcal.toFixed(2)} Kcal/kg + (${shapSign}${shap.sum_shap.toFixed(2)} Kcal/kg)</span>`;
+      document.getElementById('val-additive-math').innerText = 
+        `${pred.gcv_kcal.toFixed(2)} Kcal/kg = ${base.gcv_kcal.toFixed(2)} Kcal/kg + (${shapSign}${shap.sum_shap.toFixed(2)} Kcal/kg)`;
 
-      // Official SHAP Waterfall Image
-      if (data.waterfall_image_b64) {
-        document.getElementById('img-waterfall').src = data.waterfall_image_b64;
+      // Render the Vector SVG Stepped Waterfall Diagram
+      if (shap && shap.features) {
+        renderShapWaterfallSvg(shap.features, base.gcv_kcal, pred.gcv_kcal);
       }
     }
 
-    // Initial run
-    triggerPrediction();
+    // Interactive Real-Time SVG Stepped Waterfall Renderer
+    function renderShapWaterfallSvg(features, baseGcv, predGcv) {
+      // Sort features by absolute SHAP contribution descending
+      const sortedFeatures = [...features].sort((a, b) => Math.abs(b.shap) - Math.abs(a.shap));
+
+      let current = baseGcv;
+      const steps = [];
+      for (const f of sortedFeatures) {
+        const start = current;
+        current += f.shap;
+        steps.push({
+          name: f.name,
+          val: f.val,
+          shap: f.shap,
+          start: start,
+          end: current
+        });
+      }
+
+      // Compute coordinate domain bounds
+      const allVals = [baseGcv, predGcv];
+      steps.forEach(s => {
+        allVals.push(s.start);
+        allVals.push(s.end);
+      });
+
+      const minVal = Math.min(...allVals);
+      const maxVal = Math.max(...allVals);
+      const span = maxVal - minVal;
+      const padding = Math.max(160, span * 0.08);
+
+      const domainMin = Math.floor((minVal - padding) / 100) * 100;
+      const domainMax = Math.ceil((maxVal + padding) / 100) * 100;
+
+      const plotLeft = 180;
+      const plotRight = 735;
+      const plotWidth = plotRight - plotLeft;
+      const plotTop = 22;
+      const plotBottom = 245;
+      const plotHeight = plotBottom - plotTop;
+      const rowHeight = plotHeight / steps.length;
+
+      function scaleX(val) {
+        return plotLeft + ((val - domainMin) / (domainMax - domainMin)) * plotWidth;
+      }
+
+      let svgHtml = `<svg viewBox="0 0 760 295" width="100%" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; background: #090D16; font-family: 'JetBrains Mono', monospace;">`;
+
+      // Vertical Grid Lines and Calibrated Ticks
+      const tickStep = span > 1400 ? 500 : (span > 800 ? 250 : 200);
+      const firstTick = Math.ceil(domainMin / tickStep) * tickStep;
+      for (let t = firstTick; t <= domainMax; t += tickStep) {
+        const tx = scaleX(t);
+        if (tx >= plotLeft && tx <= plotRight) {
+          svgHtml += `<line x1="${tx.toFixed(1)}" y1="${plotTop}" x2="${tx.toFixed(1)}" y2="${plotBottom}" stroke="#1E293B" stroke-dasharray="2,2" stroke-width="1"/>`;
+          svgHtml += `<line x1="${tx.toFixed(1)}" y1="${plotBottom}" x2="${tx.toFixed(1)}" y2="${(plotBottom + 5).toFixed(1)}" stroke="#475569" stroke-width="1"/>`;
+          svgHtml += `<text x="${tx.toFixed(1)}" y="${(plotBottom + 18).toFixed(1)}" text-anchor="middle" fill="#64748B" font-size="11">${t}</text>`;
+        }
+      }
+
+      // Bottom Axis baseline line
+      svgHtml += `<line x1="${plotLeft}" y1="${plotBottom}" x2="${plotRight}" y2="${plotBottom}" stroke="#334155" stroke-width="1.2"/>`;
+
+      // Vertical Baseline Line
+      const baseX = scaleX(baseGcv);
+      svgHtml += `<line x1="${baseX.toFixed(1)}" y1="${(plotTop - 4).toFixed(1)}" x2="${baseX.toFixed(1)}" y2="${plotBottom}" stroke="#94A3B8" stroke-dasharray="3,3" stroke-width="1.2" opacity="0.7"/>`;
+      svgHtml += `<text x="${baseX.toFixed(1)}" y="${(plotTop - 8).toFixed(1)}" text-anchor="middle" fill="#94A3B8" font-size="10">E[f(X)] = ${baseGcv.toFixed(0)}</text>`;
+
+      // Render Each Step
+      steps.forEach((s, i) => {
+        const yCenter = plotTop + (i + 0.5) * rowHeight;
+        const barH = 28;
+        const yTop = yCenter - barH / 2;
+        const yBottom = yCenter + barH / 2;
+        const isNeg = s.shap < 0;
+
+        // Vertical Feature Label on the left
+        svgHtml += `<text x="${plotLeft - 12}" y="${(yCenter + 4).toFixed(1)}" text-anchor="end" fill="#E2E8F0" font-size="12" font-weight="500">${s.val} = ${s.name}</text>`;
+
+        if (isNeg) {
+          // Negative SHAP: Arrow pointing LEFT (#008BFB)
+          const xStart = scaleX(s.start);
+          const xEnd = scaleX(s.end);
+          const w = Math.max(2, xStart - xEnd);
+          const arrowW = Math.min(12, Math.max(4, w * 0.35));
+          const color = '#008BFB';
+          const path = `M ${xEnd.toFixed(1)},${yCenter.toFixed(1)} L ${(xEnd + arrowW).toFixed(1)},${yTop.toFixed(1)} L ${xStart.toFixed(1)},${yTop.toFixed(1)} L ${xStart.toFixed(1)},${yBottom.toFixed(1)} L ${(xEnd + arrowW).toFixed(1)},${yBottom.toFixed(1)} Z`;
+          svgHtml += `<path d="${path}" fill="${color}"/>`;
+
+          const txtVal = `${s.shap.toFixed(2)}`;
+          if (w >= 45) {
+            svgHtml += `<text x="${((xStart + xEnd) / 2).toFixed(1)}" y="${(yCenter + 4).toFixed(1)}" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">${txtVal}</text>`;
+          } else {
+            svgHtml += `<text x="${(xEnd - 6).toFixed(1)}" y="${(yCenter + 4).toFixed(1)}" text-anchor="end" fill="${color}" font-size="11" font-weight="600">${txtVal}</text>`;
+          }
+        } else {
+          // Positive SHAP: Arrow pointing RIGHT (#FF0051)
+          const xStart = scaleX(s.start);
+          const xEnd = scaleX(s.end);
+          const w = Math.max(2, xEnd - xStart);
+          const arrowW = Math.min(12, Math.max(4, w * 0.35));
+          const color = '#FF0051';
+          const path = `M ${xStart.toFixed(1)},${yTop.toFixed(1)} L ${(xEnd - arrowW).toFixed(1)},${yTop.toFixed(1)} L ${xEnd.toFixed(1)},${yCenter.toFixed(1)} L ${(xEnd - arrowW).toFixed(1)},${yBottom.toFixed(1)} L ${xStart.toFixed(1)},${yBottom.toFixed(1)} Z`;
+          svgHtml += `<path d="${path}" fill="${color}"/>`;
+
+          const txtVal = `+${s.shap.toFixed(2)}`;
+          if (w >= 45) {
+            svgHtml += `<text x="${((xStart + xEnd) / 2).toFixed(1)}" y="${(yCenter + 4).toFixed(1)}" text-anchor="middle" fill="#FFFFFF" font-size="11" font-weight="600">${txtVal}</text>`;
+          } else {
+            svgHtml += `<text x="${(xEnd + 6).toFixed(1)}" y="${(yCenter + 4).toFixed(1)}" text-anchor="start" fill="${color}" font-size="11" font-weight="600">${txtVal}</text>`;
+          }
+        }
+
+        // Connecting Dashed Drop Line to next step
+        if (i < steps.length - 1) {
+          const nextYTop = plotTop + (i + 1) * rowHeight + (rowHeight - barH) / 2;
+          const connX = scaleX(s.end);
+          svgHtml += `<line x1="${connX.toFixed(1)}" y1="${yBottom.toFixed(1)}" x2="${connX.toFixed(1)}" y2="${nextYTop.toFixed(1)}" stroke="#64748B" stroke-dasharray="3,3" stroke-width="1.2"/>`;
+        }
+      });
+
+      // Predicted Value Indicator at bottom
+      const predX = scaleX(predGcv);
+      svgHtml += `<line x1="${predX.toFixed(1)}" y1="${plotTop}" x2="${predX.toFixed(1)}" y2="${plotBottom}" stroke="#38BDF8" stroke-dasharray="2,2" stroke-width="1.2" opacity="0.8"/>`;
+      svgHtml += `<text x="${predX.toFixed(1)}" y="${(plotBottom + 36).toFixed(1)}" text-anchor="middle" fill="#38BDF8" font-size="11" font-weight="700">f(x) = ${predGcv.toFixed(0)}</text>`;
+
+      svgHtml += `</svg>`;
+
+      document.getElementById('waterfall-svg-container').innerHTML = svgHtml;
+    }
+
+    // Initial load
+    onSliderDrag();
   </script>
 
 </body>

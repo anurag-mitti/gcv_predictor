@@ -1,13 +1,8 @@
 import os
-import io
-import base64
 import joblib
 import pandas as pd
 import numpy as np
 import shap
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -95,33 +90,6 @@ def get_astm_rank(fc, vm, m):
     else:
         return 'High Volatile Bituminous'
 
-def render_shap_waterfall_b64(calibrated_shap, raw_base, input_df):
-    calibrated_exp = shap.Explanation(
-        values=calibrated_shap,
-        base_values=raw_base,
-        data=input_df.values[0],
-        feature_names=input_df.columns.tolist()
-    )
-
-    plt.style.use('dark_background')
-    fig = plt.figure(figsize=(9, 4.8), dpi=140)
-    shap.plots.waterfall(calibrated_exp, show=False)
-
-    for axis in fig.axes:
-        labels = [t.get_text() for t in axis.get_xticklabels()]
-        if any('=' in l or '$' in l for l in labels):
-            axis.set_xticklabels([])
-
-    plt.tight_layout()
-    fig.patch.set_facecolor('#0F131C')
-    for axis in fig.axes:
-        axis.set_facecolor('#0F131C')
-
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png', bbox_inches='tight', facecolor=fig.get_facecolor(), edgecolor='none', dpi=140)
-    plt.close(fig)
-    return "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode('utf-8')
-
 # ==========================================
 # API SCHEMAS & ENDPOINTS
 # ==========================================
@@ -184,17 +152,32 @@ def predict_gcv(req: PredictionRequest):
     # ASTM Rank
     astm_rank = get_astm_rank(fixed_carbon, vm, moisture)
 
-    # Inferred Ultimate Proxies (empirical coal chemistry equations)
+    # Inferred Ultimate Proxies (Mendonça formula)
     c_est = max(30.0, min(92.0, (0.78 * fixed_carbon) + (0.52 * vm) - (0.08 * ash)))
     h_est = max(1.5, min(6.5, (0.085 * vm) + (0.015 * fixed_carbon) - (0.012 * moisture)))
     n_est = max(0.8, min(2.2, 1.15 + (0.005 * fixed_carbon)))
     s_est = max(0.3, min(6.0, ash * 0.048))
     o_est = max(1.0, 100.0 - (c_est + h_est + n_est + s_est + ash))
 
-    # Generate Authentic SHAP Waterfall Plot
-    waterfall_b64 = render_shap_waterfall_b64(calibrated_shap, raw_base, input_df)
-
     net_attribution = pred_val - raw_base
+
+    # Global Metrics Benchmarks
+    global_metrics = {
+        'normal': {
+            'samples': 5151,
+            'rmse': 139.0,
+            'mae': 98.5,
+            'r2': 0.966,
+            'cv_score': 2.02
+        },
+        'bituminous': {
+            'samples': 4494,
+            'rmse': 127.6,
+            'mae': 92.4,
+            'r2': 0.957,
+            'cv_score': 1.81
+        }
+    }[model_type if model_type == 'bituminous' else 'normal']
 
     return {
         "prediction": {
@@ -224,7 +207,14 @@ def predict_gcv(req: PredictionRequest):
             "net_delta": round(net_attribution, 2)
         },
         "shap": {
-            "sum_shap": round(float(np.sum(calibrated_shap)), 2)
+            "sum_shap": round(float(np.sum(calibrated_shap)), 2),
+            "features": [
+                {"name": "Moisture", "val": round(moisture, 1), "shap": round(float(calibrated_shap[0]), 2)},
+                {"name": "Volatile Matter", "val": round(vm, 1), "shap": round(float(calibrated_shap[1]), 2)},
+                {"name": "Standard Ash", "val": round(ash, 1), "shap": round(float(calibrated_shap[2]), 2)},
+                {"name": "Fixed Carbon", "val": round(fixed_carbon, 1), "shap": round(float(calibrated_shap[3]), 2)},
+                {"name": "Fuel_Ratio", "val": round(fuel_ratio, 2), "shap": round(float(calibrated_shap[4]), 2)}
+            ]
         },
         "local_metrics": {
             "confidence": round(loc['conf'], 1),
@@ -233,7 +223,7 @@ def predict_gcv(req: PredictionRequest):
             "r2": round(loc['r2'], 2),
             "cv_score": round(loc['cv_score'], 2)
         },
-        "waterfall_image_b64": waterfall_b64
+        "global_metrics": global_metrics
     }
 
 os.makedirs('static', exist_ok=True)
