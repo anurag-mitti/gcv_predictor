@@ -10,7 +10,6 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 st.set_page_config(
     page_title="Coal GCV Predictor",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -63,28 +62,6 @@ st.markdown("""
         font-size: 1.4rem;
         font-weight: 400;
     }
-    .baseline-card {
-        background: linear-gradient(145deg, #16202c, #10161f);
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 6px 16px rgba(0,0,0,0.25);
-        text-align: center;
-        margin-bottom: 20px;
-        border-left: 4px solid #38bdf8;
-    }
-    .baseline-title {
-        color: #7dd3fc;
-        font-size: 0.95rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 5px;
-    }
-    .baseline-value {
-        color: #f0f9ff;
-        font-size: 2.2rem;
-        font-weight: 700;
-    }
     .derived-card {
         background-color: #1f242d;
         padding: 12px 16px;
@@ -108,13 +85,14 @@ st.markdown("""
     }
     .additive-math {
         font-family: 'Courier New', Courier, monospace;
-        font-size: 1.1rem;
+        font-size: 1.05rem;
         color: #f1f5f9;
         background-color: #0d1117;
-        padding: 10px 14px;
+        padding: 12px 16px;
         border-radius: 6px;
         border-left: 3px solid #38bdf8;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
+        line-height: 1.6;
     }
     .info-callout {
         background-color: #111e2e;
@@ -124,6 +102,7 @@ st.markdown("""
         font-size: 0.9rem;
         color: #cbd5e1;
         margin-bottom: 15px;
+        line-height: 1.6;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -240,12 +219,12 @@ def render_waterfall_plot(explainer, input_data, ens_pred):
 # ==========================================
 # APP HEADER
 # ==========================================
-st.title("⚡ Advanced Coal Analysis & GCV Predictor")
-st.markdown("<p style='color: #a3a8b8; font-size: 1.2rem; margin-bottom: 25px;'>Predict Gross Calorific Value (GCV) instantly with Explainable Stacking Ensembles & Dynamic Local Evaluations.</p>", unsafe_allow_html=True)
+st.title("Advanced Coal Analysis & GCV Predictor")
+st.markdown("<p style='color: #a3a8b8; font-size: 1.15rem; margin-bottom: 25px;'>Predict Gross Calorific Value (GCV) from proximate analysis with Explainable Stacking Ensembles and dynamic local evaluations.</p>", unsafe_allow_html=True)
 
 tab_universal, tab_bituminous = st.tabs([
-    "🌐 Universal Model (All Coal Ranks)",
-    "🪨 Bituminous Coal (Specialized ASTM D388)"
+    "Universal Model (All Coal Ranks)",
+    "Bituminous Coal (Specialized ASTM D388)"
 ])
 
 # ==========================================
@@ -259,7 +238,7 @@ with tab_universal:
     col_u_inputs, col_u_results = st.columns([1, 2], gap="large")
 
     with col_u_inputs:
-        st.markdown("### 🧪 Laboratory Inputs (All Ranks)")
+        st.markdown("### Laboratory Inputs (All Ranks)")
         st.markdown("Adjust proximate properties for any coal rank (Lignite, Sub-bituminous, Bituminous, Anthracite).")
 
         moisture_u = st.slider("Moisture (%)", min_value=0.0, max_value=40.0, value=10.0, step=0.1, key="u_m")
@@ -267,16 +246,16 @@ with tab_universal:
         ash_u = st.slider("Standard Ash (%)", min_value=0.0, max_value=60.0, value=15.0, step=0.1, key="u_ash")
 
         if ash_u > 55:
-            st.error("❌ Invalid Input: Standard Ash exceeds the realistic limit of 55% for this model.")
+            st.error("Invalid Input: Standard Ash exceeds the realistic limit of 55% for this model.")
             st.stop()
 
         fixed_carbon_u = 100.0 - (moisture_u + vm_u + ash_u)
 
         st.markdown("---")
-        st.markdown("### ⚙️ Auto-Calculated Features")
+        st.markdown("### Auto-Calculated Features")
 
         if fixed_carbon_u < 0:
-            st.error("⚠️ Invalid Composition: Mass balance exceeds 100%. Please lower your inputs.")
+            st.error("Invalid Composition: Mass balance exceeds 100%. Please lower your inputs.")
             st.stop()
 
         fuel_ratio_u = fixed_carbon_u / vm_u if vm_u > 0 else 0
@@ -303,7 +282,7 @@ with tab_universal:
         local_metrics_u = compute_local_metrics(input_data_u, scaler_u, nn_u, y_u, yp_u)
 
         st.markdown("---")
-        st.markdown("### 📊 Local Sample Performance Metrics")
+        st.markdown("### Local Sample Performance Metrics")
         st.markdown("*(Evaluated dynamically on the 50 closest laboratory samples in feature space)*")
 
         col_m1, col_m2, col_m3, col_m4, col_m5 = st.columns(5)
@@ -312,10 +291,10 @@ with tab_universal:
         col_m3.metric("Local MAE", f"{local_metrics_u['mae']:.1f}")
         col_m4.metric("Local R²", f"{local_metrics_u['r2']:.2f}")
         col_m5.metric("Local CV", f"{local_metrics_u['cv_score']:.2f}%")
-        st.caption("⚡ **Local Explanation**: These metrics change dynamically for each individual sample execution as you move the sliders.")
+        st.caption("Local metrics update dynamically for each individual sample execution as inputs change.")
 
         st.markdown("---")
-        with st.expander("🔍 Global 5-Fold Benchmark Diagnostics", expanded=False):
+        with st.expander("Global 5-Fold Benchmark Diagnostics", expanded=False):
             st.markdown("""
             - **Global 5-Fold RMSE**: 150.28 Kcal/kg (Target was <= 200 Kcal/kg)
             - **Global 5-Fold MAE**: 105.97 Kcal/kg
@@ -327,76 +306,48 @@ with tab_universal:
     with col_u_results:
         gcv_pred_u = model_u.predict(input_data_u)[0]
 
-        # Baseline GCV and Pred GCV cards side by side
-        col_base, col_pred = st.columns([1, 1])
-
-        with col_base:
-            st.markdown(f"""
-                <div class="baseline-card">
-                    <div class="baseline-title">Baseline GCV (E[f(X)])</div>
-                    <span class="baseline-value">6,895</span>
-                    <span style="color: #cbd5e1; font-size: 1.1rem;"> Kcal/kg</span>
-                    <div style="color: #94a3b8; font-size: 0.82rem; margin-top: 8px;">
-                        Expected mean heating value across training dataset prior to sample features.
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-
-        with col_pred:
-            st.markdown(f"""
-                <div class="metric-container">
-                    <div class="metric-title">Universal Predicted GCV</div>
-                    <span class="metric-value">{gcv_pred_u:,.0f}</span>
-                    <span class="metric-unit"> Kcal/kg</span>
-                    <div style="color: #a3a8b8; font-size: 0.82rem; margin-top: 8px;">
-                        Final model estimation with chemical guardrails.
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+        # Predicted GCV hero display
+        st.markdown(f"""
+            <div class="metric-container">
+                <div class="metric-title">Universal Predicted GCV</div>
+                <span class="metric-value">{gcv_pred_u:,.0f}</span>
+                <span class="metric-unit"> Kcal/kg</span>
+            </div>
+        """, unsafe_allow_html=True)
 
         # AI Explanation Tabs
-        st.markdown("### 🧠 Model Explainability (SHAP)")
+        st.markdown("### Model Explainability (SHAP)")
         tab_waterfall_u, tab_summary_u = st.tabs([
-            "🔍 Local Explanation (Waterfall & Additive Formula)",
-            "📈 Global SHAP Summary Plot (All Coal Samples)"
+            "Local Explanation (Waterfall & Additive Formula)",
+            "Global SHAP Summary Plot (All Coal Samples)"
         ])
 
         with tab_waterfall_u:
-            st.markdown("Waterfall decomposition starting from **Baseline GCV** to **Predicted GCV**:")
+            st.markdown("Waterfall decomposition starting from Baseline GCV to Predicted GCV:")
             raw_base_u, calibrated_shap_u = render_waterfall_plot(explainer_u, input_data_u, gcv_pred_u)
 
-            # Exact Additive Formula & Table
+            # Exact Additive Formula Verification
             sum_shap_u = np.sum(calibrated_shap_u)
             calculated_pred_u = raw_base_u + sum_shap_u
 
             st.markdown(f"""
                 <div class="additive-box">
-                    <div class="additive-title">📐 Exact Additive Formula Verification:</div>
+                    <div class="additive-title">Predicted GCV = Baseline GCV + Sum(SHAP weights)</div>
                     <div class="additive-math">
-                        Predicted GCV = Baseline GCV + &Sigma;(SHAP weights)<br>
                         {calculated_pred_u:,.2f} Kcal/kg = {raw_base_u:,.2f} Kcal/kg + ({sum_shap_u:+,.2f} Kcal/kg)
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.88rem; margin-top: 6px;">
+                        <b>Baseline GCV (E[f(X)]) = {raw_base_u:,.2f} Kcal/kg</b>: Expected mean heating value across the training dataset prior to evaluating this sample's proximate features.
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
-            breakdown_df_u = pd.DataFrame([
-                {"Component": "Baseline GCV (E[f(X)])", "Lab Value": "Dataset Average", "SHAP Weight": f"{raw_base_u:+,.2f} Kcal/kg", "Chemical Role": "Reference starting point"},
-                {"Component": "Fixed Carbon (FC)", "Lab Value": f"{fixed_carbon_u:.2f} %", "SHAP Weight": f"{calibrated_shap_u[3]:+,.2f} Kcal/kg", "Chemical Role": "🔥 Combustible matrix (Positive weight)"},
-                {"Component": "Volatile Matter (VM)", "Lab Value": f"{vm_u:.2f} %", "SHAP Weight": f"{calibrated_shap_u[1]:+,.2f} Kcal/kg", "Chemical Role": "🔥 Combustible hydrocarbon volatiles (Positive weight)"},
-                {"Component": "Standard Ash", "Lab Value": f"{ash_u:.2f} %", "SHAP Weight": f"{calibrated_shap_u[2]:+,.2f} Kcal/kg", "Chemical Role": "❄️ Non-combustible mineral heat sink (Negative weight)"},
-                {"Component": "Moisture", "Lab Value": f"{moisture_u:.2f} %", "SHAP Weight": f"{calibrated_shap_u[0]:+,.2f} Kcal/kg", "Chemical Role": "❄️ Latent heat vaporization sink (Negative weight)"},
-                {"Component": "Fuel Ratio (FC / VM)", "Lab Value": f"{fuel_ratio_u:.2f}", "SHAP Weight": f"{calibrated_shap_u[4]:+,.2f} Kcal/kg", "Chemical Role": "⚙️ Combustion rank modifier"},
-                {"Component": "Total Net SHAP Shift", "Lab Value": "-", "SHAP Weight": f"{sum_shap_u:+,.2f} Kcal/kg", "Chemical Role": "Sum of all feature weights"},
-                {"Component": "Final Predicted GCV", "Lab Value": "-", "SHAP Weight": f"{calculated_pred_u:+,.2f} Kcal/kg", "Chemical Role": "Baseline + Sum(SHAP weights)"}
-            ])
-            st.dataframe(breakdown_df_u, use_container_width=True, hide_index=True)
-
         with tab_summary_u:
             st.markdown("""
                 <div class="info-callout">
-                    <b>📌 Feature Directions in the SHAP Summary Plot:</b><br>
-                    • <b>Standard Ash & Moisture have Negative Weights</b>: High values (red dots) shift SHAP far to the left, reducing heating value. Ash absorbs sensible heat while Moisture absorbs 540 cal/g latent heat of vaporization.<br>
-                    • <b>Fixed Carbon & Volatile Matter have Positive Weights</b>: High values (red dots) push SHAP to the right, driving heating value up as the primary combustible fuel.
+                    <b>Feature Directions in the SHAP Summary Plot:</b><br>
+                    - <b>Standard Ash & Moisture have Negative Weights</b>: High values (red points) shift SHAP far to the left, reducing heating value. Ash absorbs sensible heat while Moisture absorbs 540 cal/g latent heat of vaporization.<br>
+                    - <b>Fixed Carbon & Volatile Matter have Positive Weights</b>: High values (red points) push SHAP to the right, driving heating value up as the primary combustible fuel.
                 </div>
             """, unsafe_allow_html=True)
             st.image("models/shap_summary.png", caption="Universal Model: Global SHAP Summary Beeswarm Plot", use_container_width=True)
@@ -413,7 +364,7 @@ with tab_bituminous:
     col_b_inputs, col_b_results = st.columns([1, 2], gap="large")
 
     with col_b_inputs:
-        st.markdown("### 🪨 Laboratory Inputs (Bituminous Rank)")
+        st.markdown("### Laboratory Inputs (Bituminous Rank)")
         st.markdown("Calibrated specifically for **ASTM D388 Bituminous Coal** (Moist MMF Btu ≥ 10,500, VM ≥ 14%).")
 
         moisture_b = st.slider("Moisture (%)", min_value=0.0, max_value=25.0, value=4.5, step=0.1, key="b_m")
@@ -421,16 +372,16 @@ with tab_bituminous:
         ash_b = st.slider("Standard Ash (%)", min_value=0.0, max_value=50.0, value=12.0, step=0.1, key="b_ash")
 
         if ash_b > 45:
-            st.error("❌ Invalid Input: Standard Ash exceeds realistic limits (45%) for high-quality bituminous coal.")
+            st.error("Invalid Input: Standard Ash exceeds realistic limits (45%) for high-quality bituminous coal.")
             st.stop()
 
         fixed_carbon_b = 100.0 - (moisture_b + vm_b + ash_b)
 
         st.markdown("---")
-        st.markdown("### ⚙️ Auto-Calculated Features")
+        st.markdown("### Auto-Calculated Features")
 
         if fixed_carbon_b < 0:
-            st.error("⚠️ Invalid Composition: Mass balance exceeds 100%. Please lower your inputs.")
+            st.error("Invalid Composition: Mass balance exceeds 100%. Please lower your inputs.")
             st.stop()
 
         fuel_ratio_b = fixed_carbon_b / vm_b if vm_b > 0 else 0
@@ -457,7 +408,7 @@ with tab_bituminous:
         local_metrics_b = compute_local_metrics(input_data_b, scaler_b, nn_b, y_b, yp_b)
 
         st.markdown("---")
-        st.markdown("### 📊 Local Sample Performance Metrics")
+        st.markdown("### Local Sample Performance Metrics")
         st.markdown("*(Evaluated dynamically on the 50 closest laboratory samples in feature space)*")
 
         col_bm1, col_bm2, col_bm3, col_bm4, col_bm5 = st.columns(5)
@@ -466,10 +417,10 @@ with tab_bituminous:
         col_bm3.metric("Local MAE", f"{local_metrics_b['mae']:.1f}")
         col_bm4.metric("Local R²", f"{local_metrics_b['r2']:.2f}")
         col_bm5.metric("Local CV", f"{local_metrics_b['cv_score']:.2f}%")
-        st.caption("⚡ **Local Explanation**: These metrics change dynamically for each individual sample execution as you move the sliders.")
+        st.caption("Local metrics update dynamically for each individual sample execution as inputs change.")
 
         st.markdown("---")
-        with st.expander("🔍 Bituminous 5-Fold Benchmark Diagnostics", expanded=False):
+        with st.expander("Bituminous 5-Fold Benchmark Diagnostics", expanded=False):
             st.markdown("""
             - **Bituminous 5-Fold RMSE**: 134.18 Kcal/kg (-16.10 Kcal/kg improvement over universal)
             - **Bituminous 5-Fold MAE**: 96.29 Kcal/kg
@@ -481,76 +432,48 @@ with tab_bituminous:
     with col_b_results:
         gcv_pred_b = model_b.predict(input_data_b)[0]
 
-        # Baseline GCV and Pred GCV cards side by side
-        col_b_base, col_b_pred = st.columns([1, 1])
-
-        with col_b_base:
-            st.markdown(f"""
-                <div class="baseline-card" style="border-left: 4px solid #2ecc71;">
-                    <div class="baseline-title" style="color: #8be4b2;">Baseline GCV (E[f(X)])</div>
-                    <span class="baseline-value">7,043</span>
-                    <span style="color: #cbd5e1; font-size: 1.1rem;"> Kcal/kg</span>
-                    <div style="color: #94a3b8; font-size: 0.82rem; margin-top: 8px;">
-                        Expected mean heating value across bituminous coal training population.
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-
-        with col_b_pred:
-            st.markdown(f"""
-                <div class="metric-container-bituminous">
-                    <div class="metric-title" style="color: #8be4b2;">Bituminous Predicted GCV</div>
-                    <span class="metric-value-bituminous">{gcv_pred_b:,.0f}</span>
-                    <span class="metric-unit"> Kcal/kg</span>
-                    <div style="color: #a3a8b8; font-size: 0.82rem; margin-top: 8px;">
-                        Specialized ASTM D388 estimation with high precision.
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
+        # Predicted GCV hero display
+        st.markdown(f"""
+            <div class="metric-container-bituminous">
+                <div class="metric-title" style="color: #8be4b2;">Bituminous Predicted GCV</div>
+                <span class="metric-value-bituminous">{gcv_pred_b:,.0f}</span>
+                <span class="metric-unit"> Kcal/kg</span>
+            </div>
+        """, unsafe_allow_html=True)
 
         # AI Explanation Tabs
-        st.markdown("### 🧠 Model Explainability (SHAP)")
+        st.markdown("### Model Explainability (SHAP)")
         tab_waterfall_b, tab_summary_b = st.tabs([
-            "🔍 Local Explanation (Waterfall & Additive Formula)",
-            "📈 Global SHAP Summary Plot (Bituminous Samples)"
+            "Local Explanation (Waterfall & Additive Formula)",
+            "Global SHAP Summary Plot (Bituminous Samples)"
         ])
 
         with tab_waterfall_b:
-            st.markdown("Waterfall decomposition starting from **Baseline GCV** to **Bituminous Predicted GCV**:")
+            st.markdown("Waterfall decomposition starting from Baseline GCV to Bituminous Predicted GCV:")
             raw_base_b, calibrated_shap_b = render_waterfall_plot(explainer_b, input_data_b, gcv_pred_b)
 
-            # Exact Additive Formula & Table
+            # Exact Additive Formula Verification
             sum_shap_b = np.sum(calibrated_shap_b)
             calculated_pred_b = raw_base_b + sum_shap_b
 
             st.markdown(f"""
                 <div class="additive-box">
-                    <div class="additive-title" style="color: #2ecc71;">📐 Exact Additive Formula Verification:</div>
+                    <div class="additive-title" style="color: #2ecc71;">Predicted GCV = Baseline GCV + Sum(SHAP weights)</div>
                     <div class="additive-math" style="border-left: 3px solid #2ecc71;">
-                        Predicted GCV = Baseline GCV + &Sigma;(SHAP weights)<br>
                         {calculated_pred_b:,.2f} Kcal/kg = {raw_base_b:,.2f} Kcal/kg + ({sum_shap_b:+,.2f} Kcal/kg)
+                    </div>
+                    <div style="color: #94a3b8; font-size: 0.88rem; margin-top: 6px;">
+                        <b>Baseline GCV (E[f(X)]) = {raw_base_b:,.2f} Kcal/kg</b>: Expected mean heating value across the bituminous coal training dataset prior to evaluating this sample's proximate features.
                     </div>
                 </div>
             """, unsafe_allow_html=True)
 
-            breakdown_df_b = pd.DataFrame([
-                {"Component": "Baseline GCV (E[f(X)])", "Lab Value": "Bituminous Average", "SHAP Weight": f"{raw_base_b:+,.2f} Kcal/kg", "Chemical Role": "Reference starting point"},
-                {"Component": "Fixed Carbon (FC)", "Lab Value": f"{fixed_carbon_b:.2f} %", "SHAP Weight": f"{calibrated_shap_b[3]:+,.2f} Kcal/kg", "Chemical Role": "🔥 Combustible matrix (Positive weight)"},
-                {"Component": "Volatile Matter (VM)", "Lab Value": f"{vm_b:.2f} %", "SHAP Weight": f"{calibrated_shap_b[1]:+,.2f} Kcal/kg", "Chemical Role": "🔥 Combustible hydrocarbon volatiles (Positive weight)"},
-                {"Component": "Standard Ash", "Lab Value": f"{ash_b:.2f} %", "SHAP Weight": f"{calibrated_shap_b[2]:+,.2f} Kcal/kg", "Chemical Role": "❄️ Non-combustible mineral heat sink (Negative weight)"},
-                {"Component": "Moisture", "Lab Value": f"{moisture_b:.2f} %", "SHAP Weight": f"{calibrated_shap_b[0]:+,.2f} Kcal/kg", "Chemical Role": "❄️ Latent heat vaporization sink (Negative weight)"},
-                {"Component": "Fuel Ratio (FC / VM)", "Lab Value": f"{fuel_ratio_b:.2f}", "SHAP Weight": f"{calibrated_shap_b[4]:+,.2f} Kcal/kg", "Chemical Role": "⚙️ Combustion rank modifier"},
-                {"Component": "Total Net SHAP Shift", "Lab Value": "-", "SHAP Weight": f"{sum_shap_b:+,.2f} Kcal/kg", "Chemical Role": "Sum of all feature weights"},
-                {"Component": "Final Predicted GCV", "Lab Value": "-", "SHAP Weight": f"{calculated_pred_b:+,.2f} Kcal/kg", "Chemical Role": "Baseline + Sum(SHAP weights)"}
-            ])
-            st.dataframe(breakdown_df_b, use_container_width=True, hide_index=True)
-
         with tab_summary_b:
             st.markdown("""
                 <div class="info-callout" style="border-left: 4px solid #2ecc71;">
-                    <b>📌 Feature Directions in the Bituminous SHAP Summary Plot:</b><br>
-                    • <b>Standard Ash & Moisture have Negative Weights</b>: Non-combustibles that pull GCV down. In high-rank bituminous coal, ash dilutes organic matter while moisture absorbs thermal energy.<br>
-                    • <b>Fixed Carbon & Volatile Matter have Positive Weights</b>: Primary thermal energy producers in bituminous coal ($C + O_2 \to CO_2$).
+                    <b>Feature Directions in the Bituminous SHAP Summary Plot:</b><br>
+                    - <b>Standard Ash & Moisture have Negative Weights</b>: Non-combustibles that pull GCV down. In high-rank bituminous coal, ash dilutes organic matter while moisture absorbs thermal energy.<br>
+                    - <b>Fixed Carbon & Volatile Matter have Positive Weights</b>: Primary thermal energy producers in bituminous coal (C + O2 -> CO2).
                 </div>
             """, unsafe_allow_html=True)
             st.image("models/shap_summary_bituminous.png", caption="Bituminous Model: Global SHAP Summary Beeswarm Plot", use_container_width=True)
