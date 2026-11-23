@@ -79,6 +79,22 @@ def compute_local_metrics(sample_df, scaler, nn, y_true, y_preds):
         'cv_score': cv_score
     }
 
+def get_astm_rank(fc, vm, m):
+    if fc >= 86.0:
+        return 'Anthracite'
+    elif fc >= 78.0:
+        return 'Low Volatile Bituminous'
+    elif fc >= 69.0:
+        return 'Medium Volatile Bituminous'
+    elif fc >= 50.0 and vm >= 31.0:
+        return 'High Volatile A Bituminous'
+    elif m > 20.0:
+        return 'Sub-Bituminous C / Lignite'
+    elif m > 12.0:
+        return 'Sub-Bituminous B'
+    else:
+        return 'High Volatile Bituminous'
+
 def render_shap_waterfall_b64(calibrated_shap, raw_base, input_df):
     calibrated_exp = shap.Explanation(
         values=calibrated_shap,
@@ -165,6 +181,16 @@ def predict_gcv(req: PredictionRequest):
     # Local Evaluation on 50 nearest neighbors
     loc = compute_local_metrics(input_df, scaler, nn, y_all, y_preds)
 
+    # ASTM Rank
+    astm_rank = get_astm_rank(fixed_carbon, vm, moisture)
+
+    # Inferred Ultimate Proxies (empirical coal chemistry equations)
+    c_est = max(30.0, min(92.0, (0.78 * fixed_carbon) + (0.52 * vm) - (0.08 * ash)))
+    h_est = max(1.5, min(6.5, (0.085 * vm) + (0.015 * fixed_carbon) - (0.012 * moisture)))
+    n_est = max(0.8, min(2.2, 1.15 + (0.005 * fixed_carbon)))
+    s_est = max(0.3, min(6.0, ash * 0.048))
+    o_est = max(1.0, 100.0 - (c_est + h_est + n_est + s_est + ash))
+
     # Generate Authentic SHAP Waterfall Plot
     waterfall_b64 = render_shap_waterfall_b64(calibrated_shap, raw_base, input_df)
 
@@ -172,14 +198,26 @@ def predict_gcv(req: PredictionRequest):
 
     return {
         "prediction": {
-            "gcv_kcal": round(pred_val, 2)
+            "gcv_kcal": round(pred_val, 2),
+            "mj_kg": round(pred_val * 0.004184, 2),
+            "btu_lb": int(round(pred_val * 1.8)),
+            "ci_low": round(pred_val - loc['rmse'] * 0.6, 1),
+            "ci_high": round(pred_val + loc['rmse'] * 0.6, 1)
         },
         "chemistry": {
             "moisture": round(moisture, 2),
             "volatile_matter": round(vm, 2),
             "ash": round(ash, 2),
             "fixed_carbon": round(fixed_carbon, 2),
-            "fuel_ratio": round(fuel_ratio, 2)
+            "fuel_ratio": round(fuel_ratio, 2),
+            "astm_rank": astm_rank,
+            "proxies": {
+                "c": round(c_est, 1),
+                "h": round(h_est, 1),
+                "n": round(n_est, 1),
+                "s": round(s_est, 1),
+                "o": round(o_est, 1)
+            }
         },
         "baseline": {
             "gcv_kcal": round(raw_base, 2),
