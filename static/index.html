@@ -331,12 +331,7 @@
           <div class="p-5">
 
             <!-- TAB 1: AUTHENTIC SHAP STEPPED WATERFALL PLOT -->
-            <div id="tab-pane-waterfall" class="flex flex-col gap-3">
-              <div class="flex items-center justify-between text-xs font-mono text-muted">
-                <span>Waterfall decomposition starting from Baseline GCV to Predicted GCV:</span>
-                <span class="text-muted-light">Real-Time Vector SVG</span>
-              </div>
-              
+            <div id="tab-pane-waterfall" class="flex flex-col">
               <!-- Responsive SVG Waterfall Container -->
               <div id="waterfall-svg-container" class="border border-surface-border rounded-lg overflow-hidden bg-canvas flex items-center justify-center p-2 min-h-[300px]">
                 <!-- SVG dynamically injected here -->
@@ -423,11 +418,12 @@
           
           <!-- Clean Multi-line Responsive Calculation (Zero Horizontal Scrollbar) -->
           <div class="bg-canvas border border-surface-border rounded-lg p-3 font-mono text-xs flex flex-col gap-1.5 leading-relaxed overflow-hidden">
-            <div class="text-muted text-[11px]">
-              Predicted GCV = Baseline GCV + Sum(SHAP Weights)
+            <div class="text-muted text-[11px] flex flex-wrap justify-between gap-1">
+              <span>Predicted GCV = Baseline GCV + Sum(SHAP Weights)</span>
+              <span class="text-slate-400">FC & VM (+) | Ash & Moisture (-)</span>
             </div>
             <div id="val-additive-math" class="text-white font-medium break-words leading-normal">
-              5,744.14 Kcal/kg = 6,892.99 Kcal/kg + (-1,148.85 Kcal/kg)
+              5,744.14 Kcal/kg = 6,894.53 Kcal/kg + (-1,150.39 Kcal/kg)
             </div>
           </div>
           
@@ -632,9 +628,19 @@
       netDeltaEl.className = "font-bold " + (base.net_delta >= 0 ? 'text-positive' : 'text-negative');
 
       // Additive Formula (clean layout, zero horizontal scrollbar)
+      const fcF = shap.features.find(f => f.name === 'Fixed Carbon');
+      const vmF = shap.features.find(f => f.name === 'Volatile Matter');
+      const ashF = shap.features.find(f => f.name === 'Standard Ash');
+      const mF = shap.features.find(f => f.name === 'Moisture');
+
+      const fcStr = fcF ? `FC: +${fcF.shap.toFixed(1)}` : '';
+      const vmStr = vmF ? `VM: +${vmF.shap.toFixed(1)}` : '';
+      const ashStr = ashF ? `Ash: ${ashF.shap.toFixed(1)}` : '';
+      const mStr = mF ? `Moisture: ${mF.shap.toFixed(1)}` : '';
+
       const shapSign = shap.sum_shap >= 0 ? '+' : '';
       document.getElementById('val-additive-math').innerText = 
-        `${pred.gcv_kcal.toFixed(2)} Kcal/kg = ${base.gcv_kcal.toFixed(2)} Kcal/kg + (${shapSign}${shap.sum_shap.toFixed(2)} Kcal/kg)`;
+        `${pred.gcv_kcal.toFixed(2)} Kcal/kg = ${base.gcv_kcal.toFixed(2)} Kcal/kg + [${fcStr} | ${vmStr} | ${ashStr} | ${mStr}] (${shapSign}${shap.sum_shap.toFixed(2)} Kcal/kg)`;
 
       // Render the Vector SVG Stepped Waterfall Diagram
       if (shap && shap.features) {

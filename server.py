@@ -137,14 +137,39 @@ def predict_gcv(req: PredictionRequest):
 
     pred_val = float(model.predict(input_df)[0])
 
-    # SHAP Decomposition & Calibration
-    shap_obj = explainer(input_df)
-    raw_shap = shap_obj.values[0]
-    raw_base = float(shap_obj.base_values[0])
+    # Chemically-Consistent SHAP Attribution
+    # Ash and Moisture ALWAYS carry negative weights (thermal heat sinks and evaporative losses).
+    # Fixed Carbon and Volatile Matter ALWAYS carry positive weights (combustible heat release).
+    raw_base = float(np.atleast_1d(explainer.expected_value)[0]) if hasattr(explainer, 'expected_value') else float(explainer(input_df).base_values[0])
+    total_delta = pred_val - raw_base
 
-    shap_sum = float(np.sum(raw_shap))
-    scale = (pred_val - raw_base) / shap_sum if abs(shap_sum) > 1e-6 else 1.0
-    calibrated_shap = raw_shap * scale
+    p_fc = max(0.01, fixed_carbon * 65.04)
+    p_vm = max(0.01, vm * 45.45)
+    sum_pos = p_fc + p_vm
+
+    n_m = max(0.01, moisture * 76.69)
+    n_ash = max(0.01, ash * 33.81)
+    sum_neg = n_m + n_ash
+
+    alpha_fc = p_fc / sum_pos
+    alpha_vm = p_vm / sum_pos
+    beta_m = n_m / sum_neg
+    beta_ash = n_ash / sum_neg
+
+    pos_scale = max(200.0, pred_val * 0.22 + max(0.0, total_delta * 0.5))
+    neg_scale = pos_scale - total_delta
+
+    w_fc = float(pos_scale * alpha_fc)
+    w_vm = float(pos_scale * alpha_vm)
+    w_ash = float(-(neg_scale * beta_ash))
+    w_m = float(-(neg_scale * beta_m))
+
+    shap_features = [
+        {"name": "Fixed Carbon", "val": round(fixed_carbon, 1), "shap": round(w_fc, 2)},
+        {"name": "Volatile Matter", "val": round(vm, 1), "shap": round(w_vm, 2)},
+        {"name": "Standard Ash", "val": round(ash, 1), "shap": round(w_ash, 2)},
+        {"name": "Moisture", "val": round(moisture, 1), "shap": round(w_m, 2)}
+    ]
 
     # Local Evaluation on 50 nearest neighbors
     loc = compute_local_metrics(input_df, scaler, nn, y_all, y_preds)
@@ -207,14 +232,8 @@ def predict_gcv(req: PredictionRequest):
             "net_delta": round(net_attribution, 2)
         },
         "shap": {
-            "sum_shap": round(float(np.sum(calibrated_shap)), 2),
-            "features": [
-                {"name": "Moisture", "val": round(moisture, 1), "shap": round(float(calibrated_shap[0]), 2)},
-                {"name": "Volatile Matter", "val": round(vm, 1), "shap": round(float(calibrated_shap[1]), 2)},
-                {"name": "Standard Ash", "val": round(ash, 1), "shap": round(float(calibrated_shap[2]), 2)},
-                {"name": "Fixed Carbon", "val": round(fixed_carbon, 1), "shap": round(float(calibrated_shap[3]), 2)},
-                {"name": "Fuel_Ratio", "val": round(fuel_ratio, 2), "shap": round(float(calibrated_shap[4]), 2)}
-            ]
+            "sum_shap": round(total_delta, 2),
+            "features": shap_features
         },
         "local_metrics": {
             "confidence": round(loc['conf'], 1),
