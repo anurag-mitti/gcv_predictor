@@ -3,6 +3,8 @@ scikit-learn
 xgboost
 shap
 matplotlib
-streamlit
 joblib
 optuna
+fastapi
+uvicorn
+pydantic
