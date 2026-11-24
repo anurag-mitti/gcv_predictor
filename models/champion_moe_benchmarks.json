@@ -1,0 +1,25 @@
+{
+  "champion_moe": {
+    "rmse": 149.57744847971688,
+    "mae": 98.3642329178553,
+    "r2": 0.9600412995121989,
+    "univ_cv_rmse": 149.7658204135122,
+    "bit_cv_rmse": 135.3048349539814,
+    "num_features": 13,
+    "features": [
+      "Moisture",
+      "Volatile Matter",
+      "Standard Ash",
+      "Fixed Carbon",
+      "Fuel_Ratio",
+      "Combustible_Fraction",
+      "Inert_Ballast",
+      "Ballast_Combustible_Ratio",
+      "FC_x_VM",
+      "Ash_x_M",
+      "Volatile_in_Combustibles",
+      "Ash_FC_Ratio",
+      "Thermal_Inert_Factor"
+    ]
+  }
+}

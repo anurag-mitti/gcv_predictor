@@ -1,0 +1,23 @@
+{
+  "monotonic_gbdt": {
+    "rmse": 157.51621760168305,
+    "mae": 111.24025062944384,
+    "r2": 0.9556871519274387,
+    "monotone_constraints": [
+      -1,
+      1,
+      -1,
+      1,
+      1
+    ],
+    "baseline_gcv": 6894.352457697836
+  },
+  "conformal_prediction": {
+    "confidence_level": 0.95,
+    "method": "CrossConformal"
+  },
+  "ood_detector": {
+    "p95": 11.978891296936503,
+    "p99": 26.52370290557525
+  }
+}

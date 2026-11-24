@@ -1,0 +1,92 @@
+[
+  {
+    "name": "9. Stacking Ensemble (Ridge)",
+    "r2": 0.9952,
+    "rmse": 126.75,
+    "mae": 80.37,
+    "mape": 1.45,
+    "max_err": 1155.73,
+    "fit_time_s": 38.8
+  },
+  {
+    "name": "8. Weighted Voting Ensemble",
+    "r2": 0.9952,
+    "rmse": 127.32,
+    "mae": 81.24,
+    "mape": 1.47,
+    "max_err": 1147.1,
+    "fit_time_s": 26.53
+  },
+  {
+    "name": "10. Optuna-Tuned Champion (CUDA)",
+    "r2": 0.9951,
+    "rmse": 127.66,
+    "mae": 81.44,
+    "mape": 1.47,
+    "max_err": 1100.98,
+    "fit_time_s": 1.99
+  },
+  {
+    "name": "5. GBDT (Huber Robust)",
+    "r2": 0.9951,
+    "rmse": 127.9,
+    "mae": 80.58,
+    "mape": 1.46,
+    "max_err": 1082.92,
+    "fit_time_s": 29.58
+  },
+  {
+    "name": "4. CatBoost (CUDA GPU 1000T)",
+    "r2": 0.995,
+    "rmse": 128.97,
+    "mae": 84.16,
+    "mape": 1.55,
+    "max_err": 1088.75,
+    "fit_time_s": 18.18
+  },
+  {
+    "name": "3. XGBoost (CUDA GPU 800T)",
+    "r2": 0.995,
+    "rmse": 130.0,
+    "mae": 82.32,
+    "mape": 1.48,
+    "max_err": 1171.37,
+    "fit_time_s": 4.31
+  },
+  {
+    "name": "1. Random Forest (500 Trees)",
+    "r2": 0.9949,
+    "rmse": 130.14,
+    "mae": 83.17,
+    "mape": 1.5,
+    "max_err": 1125.6,
+    "fit_time_s": 2.97
+  },
+  {
+    "name": "2. LightGBM (600 Trees)",
+    "r2": 0.9949,
+    "rmse": 130.71,
+    "mae": 83.63,
+    "mape": 1.51,
+    "max_err": 1248.11,
+    "fit_time_s": 0.67
+  },
+  {
+    "name": "7. Deep Neural Network (MLP)",
+    "r2": 0.9944,
+    "rmse": 136.88,
+    "mae": 89.03,
+    "mape": 1.6,
+    "max_err": 1062.32,
+    "fit_time_s": 11.46
+  },
+  {
+    "name": "6. Support Vector Regressor",
+    "r2": 0.9887,
+    "rmse": 194.86,
+    "mae": 117.91,
+    "mape": 2.48,
+    "max_err": 2036.42,
+    "fit_time_s": 2.38
+  }
+]
