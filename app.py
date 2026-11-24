@@ -12,7 +12,6 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 # ==========================================
 st.set_page_config(
     page_title="Coal GCV Predictor",
-    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )

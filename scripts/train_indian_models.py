@@ -246,10 +246,10 @@ def main():
     trained_models['stacking'] = stacking
     
     # ----------------------------------------------------
-    # Model 10: Optuna Bayesian Hyper-Tuned Champion
+    # Model 10: Optuna Bayesian Hyper-Tuned Best Model
     # ----------------------------------------------------
     print("-" * 80)
-    print("Running Optuna Bayesian Optimization for Champion Hyperparameters...")
+    print("Running Optuna Bayesian Optimization for Best Model Hyperparameters...")
     
     def objective(trial):
         params = {
@@ -278,10 +278,10 @@ def main():
     best_params['random_state'] = 42
     
     print(f"Optimal Bayesian Parameters found: {best_params}")
-    champion_xgb = xgb.XGBRegressor(**best_params)
-    res_champ = evaluate_model("10. Optuna-Tuned Champion (CUDA)", champion_xgb, X_train, y_train, X_test, y_test)
+    best_model_xgb = xgb.XGBRegressor(**best_params)
+    res_champ = evaluate_model("10. Optuna-Tuned Best Model (CUDA)", best_model_xgb, X_train, y_train, X_test, y_test)
     results.append(res_champ)
-    trained_models['champion'] = champion_xgb
+    trained_models['best_model'] = best_model_xgb
     
     print("=" * 80)
     print("  ALL MODELS EVALUATION COMPLETE")
@@ -296,18 +296,18 @@ def main():
     with open('models/indian_coal_benchmarks.json', 'w') as f:
         json.dump(sorted_results, f, indent=2)
         
-    # Save the Champion Model Pipeline
-    champion_pipeline = {
-        'model': champion_xgb,
+    # Save the Best Model Model Pipeline
+    best_model_pipeline = {
+        'model': best_model_xgb,
         'scaler': scaler,
         'features': list(X.columns),
         'metrics': sorted_results[0],
         'benchmarks': sorted_results,
         'best_params': best_params
     }
-    champion_path = 'models/champion_indian_gcv_model.joblib'
-    joblib.dump(champion_pipeline, champion_path, compress=3)
-    print(f"\nChampion model successfully saved to: {champion_path}")
+    best_model_path = 'models/indian_gcv_model.joblib'
+    joblib.dump(best_model_pipeline, best_model_path, compress=3)
+    print(f"\nBest Model model successfully saved to: {best_model_path}")
 
 if __name__ == '__main__':
     main()

@@ -4,7 +4,8 @@ from sklearn.impute import KNNImputer
 
 def main():
     print("Loading raw coal laboratory dataset...")
-    df = pd.read_csv('CQ20261065053.CSV', low_memory=False)
+    csv_path = 'data/CQ20261065053.CSV' if os.path.exists('data/CQ20261065053.CSV') else 'CQ20261065053.CSV'
+    df = pd.read_csv(csv_path, low_memory=False)
     
     # Clean whitespace in column headers
     df.columns = df.columns.str.strip()

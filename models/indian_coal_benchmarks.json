@@ -18,7 +18,7 @@
     "fit_time_s": 26.53
   },
   {
-    "name": "10. Optuna-Tuned Champion (CUDA)",
+    "name": "10. Optuna-Tuned Best Model (CUDA)",
     "r2": 0.9951,
     "rmse": 127.66,
     "mae": 81.44,

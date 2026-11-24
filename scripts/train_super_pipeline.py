@@ -27,7 +27,7 @@ MODELS_DIR = BASE_DIR / 'models'
 
 import sys
 sys.path.append(str(BASE_DIR))
-from src.moe_pipeline import compute_engineered_features, ChampionMoEPipeline
+from src.moe_pipeline import compute_engineered_features, MoEPipeline
 
 print("1. Loading training datasets...")
 df_u = pd.read_csv(DATA_DIR / 'processed_coal.csv')
@@ -112,11 +112,11 @@ gating_clf.fit(X_u, is_bituminous)
 print(f"Gating Network accuracy: {gating_clf.score(X_u, is_bituminous)*100:.2f}%")
 
 # =====================================================================
-# 5. PACKAGING THE CHAMPION PIPELINE
+# 5. PACKAGING THE PRODUCTION PIPELINE
 # =====================================================================
-moe_pipeline = ChampionMoEPipeline(univ_pipeline, bit_pipeline, gating_clf, FEATURE_COLS)
-joblib.dump(moe_pipeline, MODELS_DIR / 'champion_super_moe_pipeline.joblib')
-print(f"Saved champion pipeline to {MODELS_DIR / 'champion_super_moe_pipeline.joblib'}")
+moe_pipeline = MoEPipeline(univ_pipeline, bit_pipeline, gating_clf, FEATURE_COLS)
+joblib.dump(moe_pipeline, MODELS_DIR / 'super_moe_pipeline.joblib')
+print(f"Saved production pipeline to {MODELS_DIR / 'super_moe_pipeline.joblib'}")
 
 # Evaluate MoE on full dataset
 eval_res = moe_pipeline.predict_components(X_u_raw)
@@ -125,14 +125,14 @@ moe_mae = mean_absolute_error(y_u, eval_res['pred_moe'])
 moe_r2 = r2_score(y_u, eval_res['pred_moe'])
 
 print("\n=======================================================")
-print(f"CHAMPION MoE PIPELINE FULL-FIT PERFORMANCE:")
+print(f"PRODUCTION MoE PIPELINE FULL-FIT PERFORMANCE:")
 print(f"  RMSE: {moe_rmse:.2f} Kcal/kg")
 print(f"  MAE:  {moe_mae:.2f} Kcal/kg")
 print(f"  R2:   {moe_r2:.4f} ({moe_r2*100:.2f}%)")
 print("=======================================================")
 
 benchmarks = {
-    "champion_moe": {
+    "moe_pipeline": {
         "rmse": moe_rmse,
         "mae": moe_mae,
         "r2": moe_r2,
@@ -142,5 +142,5 @@ benchmarks = {
         "features": FEATURE_COLS
     }
 }
-with open(MODELS_DIR / 'champion_moe_benchmarks.json', 'w') as f:
+with open(MODELS_DIR / 'moe_benchmarks.json', 'w') as f:
     json.dump(benchmarks, f, indent=2)

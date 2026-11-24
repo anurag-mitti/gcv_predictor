@@ -26,7 +26,7 @@ This document is structured as an end-to-end slide deck with exact talking point
 ---
 
 ## Slide 3: Dataset & Data Hygiene (Zero-Leakage Architecture)
-* **Data Source:** Geological laboratory coal quality database (`CQ20261065053.CSV`), containing thousands of real-world borehole and core samples.
+* **Data Source:** Geological laboratory coal quality database (`data/CQ20261065053.CSV`), containing thousands of real-world borehole and core samples.
 * **Target Conversion:** Converted imperial laboratory heating values ($\text{Btu/lb}$) to SI metric standard ($\text{Kcal/kg}$) using the exact conversion factor:
   $$\text{GCV} = \frac{\text{Btu}}{1.8}$$
 * **Zero-Leakage Preprocessing Protocol:**

@@ -15,39 +15,40 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 
 BASE_DIR = Path(__file__).resolve().parent
 sys.path.append(str(BASE_DIR))
-from src.moe_pipeline import ChampionMoEPipeline, compute_engineered_features
+from src.moe_pipeline import MoEPipeline, compute_engineered_features
 
 app = FastAPI(title="Coal GCV Predictor API")
 
 # ==========================================
-# CHAMPION SUPER-STACKING MoE & V2 MODULES
+# PRODUCTION MODELS & GUARDRAILS
 # ==========================================
-champion_moe = None
+moe_pipeline = None
 conformal_model = None
 ood_bundle = None
 multitask_model = None
 
 try:
-    if (BASE_DIR / 'models' / 'champion_super_moe_pipeline.joblib').exists():
-        champion_moe = joblib.load(BASE_DIR / 'models' / 'champion_super_moe_pipeline.joblib')
-        print("Loaded Champion Super-Stacking MoE Pipeline.")
+    moe_model_path = BASE_DIR / 'models' / 'super_moe_pipeline.joblib'
+    if moe_model_path.exists():
+        moe_pipeline = joblib.load(moe_model_path)
+        print("[INFO] Production MoE pipeline loaded.")
     if (BASE_DIR / 'models' / 'conformal_gcv_model.joblib').exists():
         conformal_model = joblib.load(BASE_DIR / 'models' / 'conformal_gcv_model.joblib')
-        print("Loaded Conformal Prediction model (MAPIE 95%).")
+        print("[INFO] Conformal prediction model (MAPIE 95%) loaded.")
     if (BASE_DIR / 'models' / 'ood_detector.joblib').exists():
         ood_bundle = joblib.load(BASE_DIR / 'models' / 'ood_detector.joblib')
-        print("Loaded Mahalanobis OOD Detector.")
+        print("[INFO] Mahalanobis anomaly detector loaded.")
     if (BASE_DIR / 'models' / 'multitask_ultimate_model.joblib').exists():
         multitask_model = joblib.load(BASE_DIR / 'models' / 'multitask_ultimate_model.joblib')
-        print("Loaded Multi-Task Ultimate Elemental model.")
+        print("[INFO] Multi-task elemental model loaded.")
 except Exception as e:
-    print(f"Notice: Optional module load: {e}")
+    print(f"[WARNING] Optional module load error: {e}")
 
-# Load fallback models ONLY if champion MoE is not available
+# Fallback baseline models
 model_u = None
 model_b = None
-if champion_moe is None:
-    print("Loading Fallback Baseline Models...")
+if moe_pipeline is None:
+    print("[INFO] Loading fallback baseline models...")
     model_u = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
     model_b = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv_bituminous.joblib')
 
@@ -81,7 +82,7 @@ nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transfo
 import gc
 gc.collect()
 
-print("All models and local evaluators successfully initialized.")
+print("[INFO] Model initialization complete.")
 
 def compute_local_metrics(sample_df, scaler, nn, y_true, y_preds):
     sample_scaled = scaler.transform(sample_df)
@@ -171,11 +172,11 @@ def predict_gcv(req: PredictionRequest):
         y_all = y_u
         y_preds = y_pred_all_u
 
-    # Prediction with Champion Super-Stacking MoE Pipeline
+    # Prediction with Production MoE Pipeline
     moe_info = {}
-    if champion_moe is not None:
+    if moe_pipeline is not None:
         try:
-            res_moe = champion_moe.predict_components(input_df)
+            res_moe = moe_pipeline.predict_components(input_df)
             pred_val = float(res_moe['pred_moe'][0])
             moe_info = {
                 'moe_active': True,

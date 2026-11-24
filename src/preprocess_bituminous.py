@@ -11,7 +11,7 @@ from sklearn.impute import KNNImputer
 
 def main():
     print("Loading raw coal laboratory dataset for Bituminous filtering...")
-    raw_path = 'CQ20261065053.CSV'
+    raw_path = 'data/CQ20261065053.CSV' if os.path.exists('data/CQ20261065053.CSV') else 'CQ20261065053.CSV'
     if not os.path.exists(raw_path):
         raise FileNotFoundError(f"{raw_path} not found.")
 

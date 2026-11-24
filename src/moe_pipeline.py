@@ -23,7 +23,7 @@ def compute_engineered_features(df):
     
     return df
 
-class ChampionMoEPipeline:
+class MoEPipeline:
     def __init__(self, univ_stack, bit_stack, gating_clf, feature_cols):
         self.univ_stack = univ_stack
         self.bit_stack = bit_stack

@@ -1,6 +1,6 @@
 """
 Independent Out-Of-Domain Benchmark:
-Evaluates V1 Baseline vs Champion Super-Stacking MoE Pipeline on 8,423 unseen coal samples.
+Evaluates Baseline Model vs Mixture-of-Experts (MoE) Pipeline on 8,423 unseen coal samples.
 """
 
 import sys
@@ -13,11 +13,12 @@ from sklearn.metrics import root_mean_squared_error, mean_absolute_error, r2_sco
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
-from src.moe_pipeline import ChampionMoEPipeline, compute_engineered_features
+from src.moe_pipeline import MoEPipeline, compute_engineered_features
 
-print("1. Loading V1 Baseline and Champion Super-Stacking MoE models...")
+print("1. Loading Baseline and MoE Pipeline models...")
 v1_model = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
-champion_moe = joblib.load(BASE_DIR / 'models' / 'champion_super_moe_pipeline.joblib')
+moe_path = BASE_DIR / 'models' / 'super_moe_pipeline.joblib'
+moe_pipeline = joblib.load(moe_path)
 
 print("2. Loading UNSEEN external coal dataset (8,423 samples)...")
 df_unseen = pd.read_csv(BASE_DIR / 'data' / 'indian_coal_augmented.csv')
@@ -36,8 +37,8 @@ mae_v1 = float(mean_absolute_error(y_unseen, pred_v1))
 mape_v1 = float(mean_absolute_percentage_error(y_unseen, pred_v1) * 100)
 r2_v1 = float(r2_score(y_unseen, pred_v1))
 
-print("\n4. Predicting with Champion Super-Stacking MoE Pipeline (Interactions + ASTM MoE Routing)...")
-moe_res = champion_moe.predict_components(X_unseen)
+print("\n4. Predicting with MoE Pipeline (Interactions + ASTM MoE Routing)...")
+moe_res = moe_pipeline.predict_components(X_unseen)
 pred_moe = moe_res['pred_moe']
 rmse_moe = float(root_mean_squared_error(y_unseen, pred_moe))
 mae_moe = float(mean_absolute_error(y_unseen, pred_moe))
@@ -50,8 +51,8 @@ delta_mae = mae_v1 - mae_moe
 print("\n" + "="*80)
 print("  INDEPENDENT OUT-OF-DOMAIN BENCHMARK RESULTS (8,423 UNSEEN SAMPLES)")
 print("="*80)
-print(f"V1 Baseline:   RMSE = {rmse_v1:6.2f} Kcal/kg | MAE = {mae_v1:6.2f} Kcal/kg | MAPE = {mape_v1:5.2f}% | R2 = {r2_v1:.4f} ({r2_v1*100:5.2f}%)")
-print(f"Champion MoE:  RMSE = {rmse_moe:6.2f} Kcal/kg | MAE = {mae_moe:6.2f} Kcal/kg | MAPE = {mape_moe:5.2f}% | R2 = {r2_moe:.4f} ({r2_moe*100:5.2f}%)")
+print(f"Baseline:      RMSE = {rmse_v1:6.2f} Kcal/kg | MAE = {mae_v1:6.2f} Kcal/kg | MAPE = {mape_v1:5.2f}% | R2 = {r2_v1:.4f} ({r2_v1*100:5.2f}%)")
+print(f"MoE Pipeline:  RMSE = {rmse_moe:6.2f} Kcal/kg | MAE = {mae_moe:6.2f} Kcal/kg | MAPE = {mape_moe:5.2f}% | R2 = {r2_moe:.4f} ({r2_moe*100:5.2f}%)")
 print("-" * 80)
 print(f"QUANTITATIVE GAIN ON UNSEEN DATA:")
 print(f"  RMSE Reduction: -{delta_rmse:.2f} Kcal/kg ({delta_rmse / rmse_v1 * 100:.2f}% error cut)")
@@ -61,13 +62,13 @@ print("="*80)
 
 results = {
     "num_unseen_samples": len(df_unseen),
-    "v1_baseline": {
+    "baseline": {
         "rmse": rmse_v1,
         "mae": mae_v1,
         "mape": mape_v1,
         "r2": r2_v1
     },
-    "champion_moe": {
+    "moe_pipeline": {
         "rmse": rmse_moe,
         "mae": mae_moe,
         "mape": mape_moe,
