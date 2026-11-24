@@ -314,6 +314,21 @@
               <span id="val-net-delta" class="font-bold text-negative">-1,148.85 Kcal/kg</span>
             </div>
           </div>
+
+          <!-- Thermodynamic & OOD Guardrails Bar -->
+          <div class="border-t border-surface-border-subtle pt-2.5 flex flex-wrap items-center justify-between gap-2 font-mono text-[11px]">
+            <div class="flex items-center gap-1.5">
+              <span class="text-muted">Sample Authenticity:</span>
+              <span id="badge-ood" class="inline-flex items-center gap-1 px-2 py-0.5 rounded font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                In-Distribution (D_M = 5.7)
+              </span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-muted">Dulong Energy Consistency:</span>
+              <span id="val-thermo" class="font-semibold text-slate-800">95.7% (Δ = 248.8 Kcal/kg)</span>
+            </div>
+          </div>
         </div>
 
         <!-- 2. SHAP VISUALIZATIONS (PUT ABOVE FORMULA) -->
@@ -381,6 +396,15 @@
                       <td class="p-2.5 text-right text-positive">150.28</td>
                       <td class="p-2.5 text-right">105.97</td>
                       <td class="p-2.5 text-right text-positive">0.960</td>
+                    </tr>
+                    <tr class="text-slate-700 hover:bg-slate-50 transition-colors">
+                      <td class="p-2.5 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                        Monotonic GBDT (Physics-Constrained)
+                      </td>
+                      <td class="p-2.5 text-right text-positive">157.52</td>
+                      <td class="p-2.5 text-right">111.24</td>
+                      <td class="p-2.5 text-right text-positive">0.956</td>
                     </tr>
                     <tr class="text-slate-700 hover:bg-slate-50 transition-colors">
                       <td class="p-2.5">XGBoost Regressor</td>
@@ -594,7 +618,39 @@
       
       document.getElementById('val-hero-mj').innerText = mjVal.toFixed(2);
       document.getElementById('val-hero-btu').innerText = Math.round(btuVal).toLocaleString('en-US');
-      document.getElementById('val-ci').innerText = `95% CI: [${Math.round(ciLow).toLocaleString('en-US')} — ${Math.round(ciHigh).toLocaleString('en-US')}] Kcal/kg`;
+      const ciPrefix = pred.conformal_certified ? '95% Conformal CI' : '95% CI';
+      document.getElementById('val-ci').innerText = `${ciPrefix}: [${Math.round(ciLow).toLocaleString('en-US')} — ${Math.round(ciHigh).toLocaleString('en-US')}] Kcal/kg`;
+
+      // OOD Authenticity Guardrail
+      if (data.ood) {
+        const ood = data.ood;
+        const oodElem = document.getElementById('badge-ood');
+        if (oodElem) {
+          let badgeCls = "inline-flex items-center gap-1 px-2 py-0.5 rounded font-semibold border ";
+          let dotColor = "bg-emerald-600";
+          if (ood.badge_color === 'positive') {
+            badgeCls += "bg-emerald-50 text-emerald-800 border-emerald-200";
+            dotColor = "bg-emerald-600";
+          } else if (ood.badge_color === 'accent') {
+            badgeCls += "bg-amber-50 text-amber-800 border-amber-200";
+            dotColor = "bg-amber-600";
+          } else {
+            badgeCls += "bg-rose-50 text-rose-800 border-rose-200";
+            dotColor = "bg-rose-600";
+          }
+          oodElem.className = badgeCls;
+          oodElem.innerHTML = `<span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span> ${ood.status} (D_M = ${ood.mahalanobis_dist.toFixed(1)})`;
+        }
+      }
+
+      // Thermodynamic Energy Consistency Guardrail
+      if (data.thermodynamics) {
+        const th = data.thermodynamics;
+        const thElem = document.getElementById('val-thermo');
+        if (thElem) {
+          thElem.innerText = `${th.agreement_pct.toFixed(1)}% (Δ = ${th.residual_kcal.toFixed(1)} Kcal/kg)`;
+        }
+      }
 
       // Baseline & Net
       document.getElementById('val-baseline-gcv').innerText = base.gcv_kcal.toFixed(2) + ' Kcal/kg';
