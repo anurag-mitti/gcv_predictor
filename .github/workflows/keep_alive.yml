@@ -1,0 +1,26 @@
+name: Keep Render App Alive
+
+on:
+  schedule:
+    # Run every 10 minutes to guarantee Render never sleeps (15 min inactivity limit)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Web Service
+        run: |
+          URL="${{ secrets.RENDER_APP_URL }}"
+          if [ -z "$URL" ]; then
+            URL="https://gcv-predictor.onrender.com"
+          fi
+          echo "Pinging $URL at $(date)..."
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "Response code: $STATUS_CODE"
+          if [ "$STATUS_CODE" -ge 200 ] && [ "$STATUS_CODE" -lt 400 ]; then
+            echo "Render app is awake and responding cleanly."
+          else
+            echo "Warning: Received response status $STATUS_CODE"
+          fi
