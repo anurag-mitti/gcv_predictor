@@ -1,8 +1,6 @@
 pandas
 scikit-learn
 xgboost
-shap
 joblib
 fastapi
-uvicorn
 pydantic

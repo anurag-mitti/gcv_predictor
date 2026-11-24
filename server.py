@@ -3,7 +3,6 @@ from pathlib import Path
 import joblib
 import pandas as pd
 import numpy as np
-import shap
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
@@ -18,15 +17,15 @@ BASE_DIR = Path(__file__).resolve().parent
 app = FastAPI(title="Coal GCV Predictor API")
 
 # ==========================================
-# LOAD MODELS & EXPLAINERS
+# LOAD MODELS
 # ==========================================
 print("Loading Universal Model...")
 model_u = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
-explainer_u = shap.TreeExplainer(model_u.named_estimators_['xgb'])
+BASE_EXPECTED_GCV_UNIVERSAL = 6894.53
 
 print("Loading Bituminous Model...")
 model_b = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv_bituminous.joblib')
-explainer_b = shap.TreeExplainer(model_b.named_estimators_['xgb'])
+BASE_EXPECTED_GCV_BITUMINOUS = 7042.89
 
 FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel_Ratio']
 
@@ -125,14 +124,14 @@ def predict_gcv(req: PredictionRequest):
 
     if model_type == 'bituminous':
         model = model_b
-        explainer = explainer_b
+        raw_base = BASE_EXPECTED_GCV_BITUMINOUS
         scaler = scaler_b
         nn = nn_b
         y_all = y_b
         y_preds = y_pred_all_b
     else:
         model = model_u
-        explainer = explainer_u
+        raw_base = BASE_EXPECTED_GCV_UNIVERSAL
         scaler = scaler_u
         nn = nn_u
         y_all = y_u
@@ -140,10 +139,9 @@ def predict_gcv(req: PredictionRequest):
 
     pred_val = float(model.predict(input_df)[0])
 
-    # Chemically-Consistent SHAP Attribution
+    # Chemically-Consistent Attribution
     # Ash and Moisture ALWAYS carry negative weights (thermal heat sinks and evaporative losses).
     # Fixed Carbon and Volatile Matter ALWAYS carry positive weights (combustible heat release).
-    raw_base = float(np.atleast_1d(explainer.expected_value)[0]) if hasattr(explainer, 'expected_value') else float(explainer(input_df).base_values[0])
     total_delta = pred_val - raw_base
 
     p_fc = max(0.01, fixed_carbon * 65.04)
