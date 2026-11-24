@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import joblib
 import pandas as pd
 import numpy as np
@@ -12,23 +13,25 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 
+BASE_DIR = Path(__file__).resolve().parent
+
 app = FastAPI(title="Coal GCV Predictor API")
 
 # ==========================================
 # LOAD MODELS & EXPLAINERS
 # ==========================================
 print("Loading Universal Model...")
-model_u = joblib.load('models/ensemble_gcv.joblib')
+model_u = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
 explainer_u = shap.TreeExplainer(model_u.named_estimators_['xgb'])
 
 print("Loading Bituminous Model...")
-model_b = joblib.load('models/ensemble_gcv_bituminous.joblib')
+model_b = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv_bituminous.joblib')
 explainer_b = shap.TreeExplainer(model_b.named_estimators_['xgb'])
 
 FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel_Ratio']
 
 # Universal Evaluator
-df_u = pd.read_csv('data/processed_coal.csv')
+df_u = pd.read_csv(BASE_DIR / 'data' / 'processed_coal.csv')
 X_u = df_u[FEATURES]
 y_u = df_u['GCV'].values
 y_pred_all_u = model_u.predict(X_u)
@@ -36,7 +39,7 @@ scaler_u = StandardScaler().fit(X_u)
 nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transform(X_u))
 
 # Bituminous Evaluator
-df_b = pd.read_csv('data/processed_coal_bituminous.csv')
+df_b = pd.read_csv(BASE_DIR / 'data' / 'processed_coal_bituminous.csv')
 X_b = df_b[FEATURES]
 y_b = df_b['GCV'].values
 y_pred_all_b = model_b.predict(X_b)
@@ -245,13 +248,13 @@ def predict_gcv(req: PredictionRequest):
         "global_metrics": global_metrics
     }
 
-os.makedirs('static', exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/models", StaticFiles(directory="models"), name="models")
+os.makedirs(BASE_DIR / 'static', exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+app.mount("/models", StaticFiles(directory=str(BASE_DIR / "models")), name="models")
 
 @app.get("/")
 def serve_index():
-    return FileResponse("static/index.html")
+    return FileResponse(str(BASE_DIR / "static" / "index.html"))
 
 if __name__ == "__main__":
     import uvicorn
