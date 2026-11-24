@@ -97,7 +97,7 @@ def draw_moe_architecture():
     draw_arrow(0.86, 0.54, 0.88, 0.54)
 
     plt.tight_layout()
-    output_path = MODELS_DIR / 'production_moe_moe_architecture.png'
+    output_path = MODELS_DIR / 'moe_architecture.png'
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Generated {output_path}")

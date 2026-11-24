@@ -230,7 +230,7 @@ A rigorous systematic review of published literature reveals critical structural
 ### 3.1 END-TO-END SYSTEM ARCHITECTURE
 To overcome the deficiencies identified in literature, this work designs a robust, zero-leakage, domain-engineered machine learning pipeline. Figure 3.1 illustrates the overarching system architecture, encompassing raw data ingestion, zero-leakage preprocessing, thirteen geochemical feature synthesis, an ASTM D388 coal rank gating network, dual super-stacking ensembles (Universal and Bituminous), soft Mixture-of-Experts blending, and post-inference safety guardrails.
 
-*(Refer to Figure 3.1: `models/production_moe_moe_architecture.png`)*
+*(Refer to Figure 3.1: `models/moe_architecture.png`)*
 
 ### 3.2 DATASET ACQUISITION AND ZERO-LEAKAGE PREPROCESSING
 The primary training repository is curated from an extensive geological laboratory database (`CQ20261065053.CSV`), encompassing thousands of real-world core drills, borehole samples, and industrial shipment tests. Each record contains laboratory measurements of Inherent Moisture (%), Volatile Matter (%), Standard Ash (%), and Calorific Value recorded in British Thermal Units per pound (Btu/lb). To standardize data to the International System of Units (SI), heating values are converted to metric Gross Calorific Value (kcal/kg) via the exact physical constant [3]:
@@ -308,23 +308,23 @@ To establish whether super-stacking and mixture-of-experts are empirically justi
 | **Super-Stacking Ensemble (Ours)**| **149.78** | **104.22** | **0.9594** | State-of-the-art; achieves lowest variance and best bias reduction [21]. |
 
 ### 4.3 PRODUCTION MIXTURE-OF-EXPERTS PERFORMANCE ACROSS RANKS
-When isolating ASTM D388 Bituminous Coals (4,494 samples), the specialized super-stacking pipeline pushes accuracy significantly higher. Table 4.2 details the cross-validation and full-fit metrics for the Production MoE MoE pipeline.
+When isolating ASTM D388 Bituminous Coals (4,494 samples), the specialized super-stacking pipeline pushes accuracy significantly higher. Table 4.2 details the cross-validation and full-fit metrics for the Production MoE pipeline.
 
 #### Table 4.2: Hierarchical Mixture-of-Experts Cross-Validation and Full-Fit Performance
 | Model Pipeline Component | CV RMSE (kcal/kg) | Full-Fit RMSE (kcal/kg) | Full-Fit MAE (kcal/kg) | $R^2$ Score |
 | :--- | :---: | :---: | :---: | :---: |
 | **Universal Super-Stacker** | 149.78 | 154.12 | 106.84 | 0.9575 |
 | **Bituminous Specialized Super-Stacker** | 135.60 | 134.18 | 96.29 | 0.9524 |
-| **Production MoE MoE Blended Pipeline** | --- | **155.94** | **105.92** | **0.9566** |
+| **Production MoE Blended Pipeline** | --- | **155.94** | **105.92** | **0.9566** |
 
 ### 4.4 INDEPENDENT OUT-OF-DOMAIN BENCHMARK ON 8,423 UNSEEN SAMPLES
-A critical test of machine learning systems in chemical engineering is evaluating performance on unseen deposits [12]. We tested the V1 baseline and Production MoE MoE models on an independent external dataset of 8,423 high-ash coal samples (`indian_coal_augmented.csv`) with ash contents ranging up to 54.8% without fine-tuning or retraining. Table 4.3 illustrates the results.
+A critical test of machine learning systems in chemical engineering is evaluating performance on unseen deposits [12]. We tested the V1 baseline and Production MoE models on an independent external dataset of 8,423 high-ash coal samples (`indian_coal_augmented.csv`) with ash contents ranging up to 54.8% without fine-tuning or retraining. Table 4.3 illustrates the results.
 
 #### Table 4.3: Out-of-Domain Generalization Benchmark on 8,423 Unseen Coal Samples
 | Pipeline Evaluated | Unseen RMSE (kcal/kg) | Unseen MAE (kcal/kg) | MAPE (%) | $R^2$ Score |
 | :--- | :---: | :---: | :---: | :---: |
 | **V1 Baseline (Generic Stacking)** | 1286.54 | 765.63 | 24.87% | 0.4930 (49.30%) |
-| **Production MoE MoE Pipeline (Ours)** | **1224.58** | **761.50** | **24.22%** | **0.5406 (54.06%)** |
+| **Production MoE Pipeline (Ours)** | **1224.58** | **761.50** | **24.22%** | **0.5406 (54.06%)** |
 | **Quantitative Advantage / Gain** | **-61.96 kcal/kg** | **-4.12 kcal/kg** | **-0.65%** | **+4.77% $R^2$ Gain** |
 
 ### 4.5 EXPLAINABLE AI AND THERMODYNAMIC CONSISTENCY WITH SHAP
@@ -347,7 +347,7 @@ To accommodate geological coal rank heterogeneity, a Hierarchical Mixture-of-Exp
 ### 5.2 INDUSTRIAL IMPACT AND SOFTWARE DEPLOYMENT
 The trained pipeline was containerized into a production-ready software stack featuring:
 1. **Streamlit Interactive Workstation UI:** Provides dual-tab universal and bituminous prediction interfaces, dynamic slider input validation, mass conservation checks (rejecting inputs > 100%), and interactive SHAP waterfall diagnostic plots [22].
-2. **FastAPI RESTful Service:** Exposes high-throughput JSON prediction endpoints (`/api/v2/predict_moe`, `/api/v2/evaluate_reliability`), returning predicted GCV, 95% conformal prediction intervals, Mahalanobis OOD outlier scores, and Dulong chemical consistency validation [23-25].
+2. **FastAPI RESTful Service:** Exposes high-throughput JSON prediction endpoints (`/api/predict`, `/api/v2/evaluate_reliability`), returning predicted GCV, 95% conformal prediction intervals, Mahalanobis OOD outlier scores, and Dulong chemical consistency validation [23-25].
 3. **Dockerized Cloud Deployment:** Containerized with standardized Render/Cloudflared bindings, allowing seamless on-premises deployment in thermal plant control rooms.
 
 ### 5.3 LIMITATIONS AND FUTURE DIRECTIONS
