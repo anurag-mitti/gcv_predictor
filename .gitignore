@@ -16,3 +16,9 @@ __pycache__/
 Thumbs.db
 
 # Note: models/ and data/ are intentionally NOT ignored so the Streamlit app works out-of-the-box when cloned.
+
+cloudflared.exe
+
+.vercel
+.env*
+catboost_info/
