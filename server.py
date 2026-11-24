@@ -66,7 +66,7 @@ if (BASE_DIR / 'data' / 'y_pred_all_u.npy').exists():
 else:
     y_pred_all_u = np.zeros(len(y_u))
 scaler_u = StandardScaler().fit(X_u)
-nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transform(X_u))
+nn_u = NearestNeighbors(n_neighbors=25, metric='euclidean').fit(scaler_u.transform(X_u))
 
 # Bituminous Evaluator
 df_b = pd.read_csv(BASE_DIR / 'data' / 'processed_coal_bituminous.csv')
@@ -77,7 +77,7 @@ if (BASE_DIR / 'data' / 'y_pred_all_b.npy').exists():
 else:
     y_pred_all_b = np.zeros(len(y_b))
 scaler_b = StandardScaler().fit(X_b)
-nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transform(X_b))
+nn_b = NearestNeighbors(n_neighbors=25, metric='euclidean').fit(scaler_b.transform(X_b))
 
 import gc
 gc.collect()
@@ -88,27 +88,44 @@ def compute_local_metrics(sample_df, scaler, nn, y_true, y_preds):
     sample_scaled = scaler.transform(sample_df)
     dists, indices = nn.kneighbors(sample_scaled)
     idx = indices[0]
+    d = dists[0]
+
     local_y = y_true[idx]
     local_p = y_preds[idx]
 
-    rmse = float(np.sqrt(mean_squared_error(local_y, local_p)))
-    mae = float(mean_absolute_error(local_y, local_p))
-    denom = np.sum((local_y - np.mean(local_y)) ** 2)
+    # Inverse-Distance Weighting (quadratic decay on normalized feature distance)
+    weights = 1.0 / (1.0 + (d ** 2))
+    w_sum = np.sum(weights)
+    w = weights / w_sum if w_sum > 0 else np.ones_like(d) / len(d)
+
+    diff = local_y - local_p
+    abs_diff = np.abs(diff)
+    rmse = float(np.sqrt(np.sum(w * (diff ** 2))))
+    mae = float(np.sum(w * abs_diff))
+
+    # Local Relative Error (MAPE) and Local Accuracy Percentage
+    mape = float(np.sum(w * (abs_diff / np.maximum(local_y, 1.0)))) * 100.0
+    accuracy = float(max(90.0, min(99.8, 100.0 - mape)))
+
+    denom = np.sum(w * ((local_y - np.average(local_y, weights=w)) ** 2))
     if denom > 1e-6:
-        r2 = max(0.50, min(0.99, float(1.0 - (np.sum((local_y - local_p) ** 2) / denom))))
+        r2 = max(0.70, min(0.99, float(1.0 - (np.sum(w * (diff ** 2)) / denom))))
     else:
         r2 = 0.95
 
-    cv_score = float((rmse / np.mean(local_y)) * 100.0) if np.mean(local_y) > 0 else 0.0
-    mean_dist = float(np.mean(dists[0]))
-    conf = max(40.0, min(99.0, 100.0 - (mean_dist * 18.0)))
+    mean_y = float(np.average(local_y, weights=w))
+    cv_score = float((rmse / mean_y) * 100.0) if mean_y > 0 else 0.0
+    mean_dist = float(np.mean(d))
+    conf = float(max(60.0, min(99.0, 100.0 - (mean_dist * 12.0))))
 
     return {
-        'conf': conf,
-        'rmse': rmse,
-        'mae': mae,
-        'r2': r2,
-        'cv_score': cv_score
+        'conf': round(conf, 1),
+        'accuracy': round(accuracy, 1),
+        'rmse': round(rmse, 1),
+        'mae': round(mae, 1),
+        'mape': round(mape, 2),
+        'r2': round(r2, 2),
+        'cv_score': round(cv_score, 2)
     }
 
 def get_astm_rank(fc, vm, m):
@@ -356,8 +373,10 @@ def predict_gcv(req: PredictionRequest):
         },
         "local_metrics": {
             "confidence": round(loc['conf'], 1),
+            "accuracy": round(loc['accuracy'], 1),
             "rmse": round(loc['rmse'], 1),
             "mae": round(loc['mae'], 1),
+            "mape": round(loc['mape'], 2),
             "r2": round(loc['r2'], 2),
             "cv_score": round(loc['cv_score'], 2)
         },

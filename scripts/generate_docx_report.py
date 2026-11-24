@@ -261,16 +261,15 @@ def create_perfect_report():
     p_guide_body.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p_guide_body.paragraph_format.line_spacing = 1.5
     p_guide_body.paragraph_format.space_before = Pt(16)
-    p_guide_body.paragraph_format.space_after = Pt(60)
+    p_guide_body.paragraph_format.space_after = Pt(45)
     r_gb = p_guide_body.add_run(
-        "Recommended that the B. Tech. Project Report titled “Machine Learning-Based Estimation of Coal Gross "
-        "Calorific Value (GCV) from Proximate Analysis Using a Hierarchical Mixture-of-Experts Architecture” "
-        "submitted by Anurag Mitti (Roll No. BTECH/10113/24) and Jaisree Singh (Roll No. BTECH/11020/24) is approved "
-        "by me for submission. This should be accepted as fulfilling the partial requirements for the award of Degree "
-        "of Bachelor of Technology in Artificial Intelligence and Machine Learning. To the best of my knowledge, the "
-        "report represents work carried out by the students under my supervision in the Department of Computer Science "
-        "and Engineering, Birla Institute of Technology, Mesra, and the content of this report does not form a basis "
-        "for the award of any previous degree to anyone else."
+        "This is to certify that the B. Tech. Project Report entitled “Machine Learning-Based Estimation of Coal Gross "
+        "Calorific Value (GCV) from Proximate Analysis Using a Hierarchical Mixture-of-Experts Architecture”, submitted "
+        "by Anurag Mitti (Roll No. BTECH/10113/24) and Jaisree Singh (Roll No. BTECH/11020/24) in partial fulfilment "
+        "of the requirements for the award of the Degree of Bachelor of Technology in Artificial Intelligence and Machine Learning, "
+        "is a bonafide record of work carried out by them under my supervision in the Department of Computer Science and Engineering, "
+        "Birla Institute of Technology, Mesra, Ranchi. To the best of my knowledge, the matter embodied in this report represents "
+        "authentic research conducted during Semester V and has not been submitted elsewhere for the award of any other degree or diploma."
     )
     r_gb.font.name = 'Times New Roman'
     r_gb.font.size = Pt(12)
@@ -305,20 +304,26 @@ def create_perfect_report():
     # ------------------ PAGE iii: DECLARATION CERTIFICATE ------------------
     add_prelim_header("DECLARATION CERTIFICATE")
 
-    p_dec_intro = doc.add_paragraph("We certify that")
-    p_dec_intro.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p_dec_intro = doc.add_paragraph(
+        "We, Anurag Mitti and Jaisree Singh, students of Bachelor of Technology in Artificial Intelligence and Machine Learning, "
+        "Department of Computer Science and Engineering, Birla Institute of Technology, Mesra, hereby declare that the project work "
+        "presented in this report entitled “Machine Learning-Based Estimation of Coal Gross Calorific Value (GCV) from Proximate "
+        "Analysis Using a Hierarchical Mixture-of-Experts Architecture” is an authentic record of our own research carried out under "
+        "the guidance of our supervisor, Dr. Kumar Rajnish, Associate Professor, Department of Computer Science and Engineering."
+    )
+    p_dec_intro.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p_dec_intro.paragraph_format.space_before = Pt(8)
     p_dec_intro.paragraph_format.space_after = Pt(8)
     p_dec_intro.runs[0].font.name = 'Times New Roman'
     p_dec_intro.runs[0].font.size = Pt(12)
 
     dec_points = [
-        "a) The work contained in the report is original and has been done by ourselves under the general supervision of our supervisor.",
-        "b) The work has not been submitted to any other Institute for any other degree or diploma.",
-        "c) We have followed the guidelines provided by the Institute in writing the report.",
-        "d) We have conformed to the norms and guidelines given in the Ethical Code of Conduct of the Institute.",
-        "e) Whenever we have used materials (data, theoretical analysis, and text) from other sources, we have given due credit to them by citing them in the text of the report and giving their details in the references.",
-        "f) Whenever we have quoted written materials from other sources, we have put them under quotation marks and given due credit to the sources by citing them and giving required details in the references."
+        "a) The modeling pipeline, feature engineering code, and empirical validation experiments presented in this report were conducted by us.",
+        "b) The work embodied in this project has not been submitted in part or full to any other university or institute for the award of any degree, diploma, or fellowship.",
+        "c) We have strictly adhered to the academic and thesis formatting norms prescribed by Birla Institute of Technology, Mesra.",
+        "d) We have conformed to the ethical code of academic conduct and research integrity established by the Institute.",
+        "e) All laboratory datasets, literature baselines, and empirical formulas referenced from published studies have been duly cited in the text and compiled in the IEEE references list.",
+        "f) Direct quotations, mathematical equations, and standard testing methodologies adapted from literature have been cited with proper credit to the original authors."
     ]
     for pt in dec_points:
         p_pt = doc.add_paragraph(pt)
@@ -418,19 +423,22 @@ def create_perfect_report():
     p_abs.paragraph_format.space_before = Pt(14)
     p_abs.paragraph_format.space_after = Pt(12)
     abstract_text = (
-        "Gross Calorific Value (GCV) is the defining metric governing coal commercial valuation, furnace heat-rate efficiency, "
-        "and greenhouse gas emission accounting in thermal power plants. However, traditional experimental determination of GCV via oxygen "
-        "bomb calorimetry is resource-intensive, requiring specialized apparatus, high-pressure vessels, and multi-hour laboratory turnaround. "
-        "Conversely, proximate analysis—measuring moisture, volatile matter, and ash content—is swift, economical, and routinely conducted. "
-        "In this work, we present an end-to-end, zero-leakage machine learning framework to accurately estimate GCV exclusively from proximate analysis. "
-        "We develop a domain-informed feature synthesis pipeline engineering thirteen geochemical interaction features, including fuel ratio, "
-        "combustible fraction, inert ballast, and thermal inert factors. To handle coal rank heterogeneity, we implement a Hierarchical Mixture-of-Experts "
-        "(MoE) architecture comprising an ASTM D388 coal rank gating classifier routing predictions across universal and bituminous specialized "
-        "super-stacking ensembles of CatBoost, XGBoost, and LightGBM with Ridge meta-learning. Across extensive 5-fold cross-validation, the proposed "
-        "MoE framework delivers state-of-the-art accuracy with an RMSE of 149.78 kcal/kg for universal coal and 135.60 kcal/kg for bituminous coal, "
-        "achieving an R² of 95.66%. On an independent out-of-domain benchmark of 8,423 unseen high-ash coal samples, our architecture reduces RMSE "
-        "by 61.96 kcal/kg over traditional baselines. Furthermore, the model incorporates SHAP explainability, 95% conformal prediction intervals, "
-        "and Mahalanobis out-of-distribution detection, packaged into an interactive workstation UI and containerized REST API ready for real-time plant deployment."
+        "In thermal power stations, calculating the Gross Calorific Value (GCV) of incoming coal dictates boiler firing parameters, "
+        "fuel blending, and commercial billing. Standard laboratory testing relies on oxygen bomb calorimetry (ASTM D5865), which "
+        "requires charging pure oxygen into a vessel at 30 bar and waiting several hours through sample crushing, pelletizing, and "
+        "thermal stabilization. Proximate analysis (moisture, volatile matter, and ash), by contrast, is routinely completed on-site "
+        "within minutes using standard muffle furnaces. In this B.Tech project, our team built an accurate, zero-leakage machine learning "
+        "pipeline to estimate coal GCV exclusively from proximate data. Recognizing that standard gradient boosting trees struggle with "
+        "non-linear multi-variable interactions, we synthesized thirteen physical combustion features—such as the fuel ratio, combustible "
+        "organic fraction, ballast heat load, and thermal inert penalty. Because low-rank lignite burns through fundamentally different "
+        "devolatilization kinetics than bituminous coals, a single monolithic model inevitably underfits across ranks. We therefore designed "
+        "a Hierarchical Mixture-of-Experts (MoE) pipeline: an ASTM D388 coal rank classifier dynamically weights predictions between a "
+        "universal stacking ensemble and a bituminous-specialized stack combining CatBoost, XGBoost, and LightGBM with Ridge meta-learning. "
+        "Across 5-fold cross-validation, our architecture attained an RMSE of 149.78 kcal/kg across all ranks and 135.60 kcal/kg on bituminous "
+        "coals (R² = 95.66%). To verify generalization under tough industrial conditions, we benchmarked the pipeline on an unseen dataset "
+        "of 8,423 high-ash Indian coal samples, where our model lowered prediction RMSE by 61.96 kcal/kg compared to standard baseline regressors. "
+        "The pipeline is hardened with SHAP feature explainability, 95% conformal prediction bounds via MAPIE, and Mahalanobis distance outlier "
+        "detection, all integrated into a Streamlit plant workstation and a FastAPI container for real-time boiler control."
     )
     r = p_abs.add_run(abstract_text)
     r.font.name = 'Times New Roman'
@@ -442,16 +450,18 @@ def create_perfect_report():
     add_prelim_header_double_underline("ACKNOWLEDGEMENT")
 
     ack_paragraphs = [
-        "We express our deepest gratitude to our project supervisor, Dr. Kumar Rajnish, Associate Professor, Department of Computer Science "
-        "and Engineering, Birla Institute of Technology, Mesra, for his invaluable guidance, constructive critique, and continuous encouragement "
-        "throughout the conception, experimentation, and writing of this project.",
-        "We extend our sincere thanks to the Head of the Department, Department of Computer Science and Engineering, Birla Institute of "
-        "Technology, Mesra, for providing excellent institutional infrastructure, high-performance computing resources, and an inspiring academic "
-        "environment. We also thank all the respected faculty members and technical staff of the department for their direct and indirect support during the project.",
-        "We would also like to acknowledge the geological and energy laboratory resources for providing access to industrial insights and domain datasets "
-        "that proved crucial to the empirical verification of this research.",
-        "Finally, we are profoundly grateful to our parents, family, and peers for their constant moral support, patience, and unwavering belief "
-        "in our academic endeavors."
+        "We express our sincere gratitude and indebtedness to our project supervisor, Dr. Kumar Rajnish, Associate Professor, "
+        "Department of Computer Science and Engineering, Birla Institute of Technology, Mesra, for his continuous guidance, technical "
+        "advice, and encouragement throughout the duration of this fifth-semester project. His critical reviews during our progress "
+        "presentations helped us refine our model architecture, adhere to strict cross-validation protocols, and focus on practical "
+        "engineering constraints.",
+        "We extend our sincere thanks to the Head of the Department, Department of Computer Science and Engineering, BIT Mesra, for "
+        "granting us access to departmental computing laboratories and hardware resources required to train and evaluate our ensemble models.",
+        "We are also thankful to our course instructors, faculty members, and technical staff in the CSE department for their cooperation "
+        "and assistance. Special thanks are due to our friends and classmates in the AIML branch for their discussions, suggestions, and "
+        "collaborative inputs during model testing and debugging.",
+        "Lastly, we would like to thank our parents and family members for their constant moral support, patience, and motivation "
+        "throughout our academic journey at BIT Mesra."
     ]
     for p_idx, ack_p in enumerate(ack_paragraphs):
         p_ack = doc.add_paragraph()
@@ -848,33 +858,34 @@ def create_perfect_report():
 
     add_heading1("1.1 OVERVIEW OF COAL ENERGY & QUALITY CHARACTERIZATION")
     add_body(
-        "Coal remains one of the primary baseload energy sources worldwide, supplying over 36% of global electricity "
-        "generation and playing an irreplaceable role in metallurgical steel manufacture, cement production, and industrial gasification [1]. "
-        "The economic value, contract pricing, combustion behavior, and environmental emissions of any coal shipment are governed principally "
-        "by its Gross Calorific Value (GCV), also termed Higher Heating Value (HHV) [2]. GCV quantifies the total heat released per unit mass "
-        "when fuel is burned completely under stoichiometric conditions and all combustion water vapor is condensed back into liquid form [3]. "
-        "In commercial coal trading and power generation, accurate GCV determination is fundamental to optimizing pulverized fuel boilers, "
-        "blending divergent coal grades, maintaining thermal efficiency, and ensuring regulatory compliance with greenhouse gas emission standards [4]."
+        "Thermal power stations still generate more than a third of the world's electricity by burning coal, making accurate measurement "
+        "of fuel heating value a day-to-day operational necessity [1]. In commercial trade and plant dispatch, a coal shipment's price and "
+        "its performance inside a boiler come down to one primary metric: the Gross Calorific Value (GCV), or Higher Heating Value (HHV) [2]. "
+        "This number tells plant engineers the total heat released when unit mass of fuel burns completely under stoichiometric conditions "
+        "and all water vapor condenses back to liquid [3]. Without a reliable GCV figure, boiler technicians cannot set fuel-air firing "
+        "ratios properly, blend coals of different grades, or ensure the plant meets thermal heat-rate targets [4]."
     )
 
     add_heading1("1.2 BOMB CALORIMETRY VS. PROXIMATE ANALYSIS BOTTLENECK")
     add_body(
-        "Standard industrial determination of GCV requires isoperibol or adiabatic oxygen bomb calorimetry (e.g., ASTM D5865 or ISO 1928) [5, 6]. "
-        "While bomb calorimetry offers high experimental precision, it presents severe operational limitations for commercial power plants "
-        "and coal mining washeries:"
+        "Industrial laboratories determine coal GCV using isoperibol or adiabatic oxygen bomb calorimeters under standards such as "
+        "ASTM D5865 or ISO 1928 [5, 6]. While bomb calorimetry provides dependable measurements, the actual testing workflow creates "
+        "severe bottlenecks for operating power plants:"
     )
     add_body(
-        "1. Turnaround Delays: Sample pulverization, pelletization, oxygen vessel pressurization (30 bar), temperature equilibrium stabilization, "
-        "and acid titration require several hours to over a day of laboratory time [5].\n"
-        "2. High Capital & Operating Cost: Bomb calorimeters require pure oxygen supply, certified benzoic acid calibration standards, and skilled lab technicians.\n"
-        "3. Operational Mismatch: Coal shipments arriving at power utility sidings must be unloaded, stacked, or bunkered rapidly. Waiting for calorimetry "
-        "results leads to poor boiler fuel management and sub-optimal combustion."
+        "1. Turnaround Delays: Preparing a sample requires crushing, pulverizing to 212 microns, pressing into a 1-gram pellet, wiring with fuse thread, "
+        "charging the bomb cylinder with pure oxygen at 30 bar, and waiting through thermal stabilization cycles. The entire process takes anywhere "
+        "from three hours to a full day [5].\n"
+        "2. High Operational Expenses: Operating bomb calorimeters requires dedicated laboratory technicians, recurring purchases of certified "
+        "benzoic acid standards, and pressurized pure oxygen cylinders.\n"
+        "3. Practical Timing Mismatch: Coal rakes arriving at thermal power stations must be unloaded into track hoppers and bunkers within "
+        "hours to avoid railway demurrage penalties. Operators cannot wait half a day for bomb calorimeter results before deciding boiler firing blends."
     )
     add_body(
-        "In contrast, Proximate Analysis (ASTM D3172)—comprising Moisture (M), Volatile Matter (VM), and Standard Ash (Ash)—is inexpensive, "
-        "rapid, and conducted on-site using simple drying ovens and muffle furnaces [7]. Fixed Carbon (FC) is then derived as the mass balance remainder [8]. "
-        "Consequently, there exists immense commercial and academic motivation to develop machine learning algorithms capable of estimating GCV "
-        "directly and accurately from proximate analysis alone [9]."
+        "Proximate analysis (ASTM D3172), by contrast, is remarkably fast and cheap. Technicians heat pulverized samples in standard drying ovens "
+        "and muffle furnaces to measure Moisture (M), Volatile Matter (VM), and Standard Ash (Ash) within minutes [7]. Fixed Carbon (FC) is "
+        "calculated directly by subtracting these three percentages from 100 [8]. Because proximate testing is already part of daily plant routines, "
+        "building a machine learning model that predicts GCV directly from proximate metrics offers immense practical value [9]."
     )
 
     add_figure(str(MODELS_DIR / 'industrial_testing_pipeline.png'),
@@ -883,39 +894,43 @@ def create_perfect_report():
 
     add_heading1("1.3 PROBLEM STATEMENT AND RESEARCH CHALLENGES")
     add_body(
-        "Despite decades of empirical modeling, existing mathematical formulas and machine learning regressors face distinct challenges when "
-        "predicting GCV purely from proximate data:"
+        "Even though engineers have proposed regression formulas for decades, predicting GCV purely from proximate data remains difficult "
+        "because of several geochemical and modeling hurdles:"
     )
     add_body(
-        "• Non-linear Coal Metamorphism: Coal is a heterogeneous rock spanning distinct geochemical ranks (lignite, sub-bituminous, bituminous, anthracite) [10]. "
-        "Single monolithic regression models suffer from structural bias because the thermodynamic energy contribution of volatile matter changes "
-        "drastically between low-rank and high-rank coals [11].\n"
-        "• High Ash and Ballast Variability: Coals from Gondwana deposits (such as Indian and Australian basins) frequently exhibit high ash content "
-        "(>35–50%), rendering models trained on clean northern hemisphere coals inaccurate [12, 13].\n"
-        "• Black-Box Skepticism: Machine learning models often violate fundamental chemical thermodynamics (e.g., predicting an increase in calorific "
-        "value when non-combustible mineral ash rises) [14]. Without physical monotonicity and explainability, plant engineers reject ML predictions.\n"
-        "• Lack of Uncertainty Quantification: Point predictions do not inform plant operators of prediction reliability, which is dangerous when "
-        "evaluating unseen or out-of-distribution coal deliveries [15]."
+        "• Rank-Dependent Metamorphism: Coal is not a uniform fuel. It ranges from geologically young, oxygen-rich lignite to mature, carbon-dense "
+        "anthracite [10]. In low-rank coals, volatile matter contains significant non-combustible carbon dioxide and water vapor, whereas in "
+        "bituminous coals, volatiles consist of high-energy aliphatic and aromatic hydrocarbons. A single regression model trained across all ranks "
+        "struggles to capture this shifting energy density [11].\n"
+        "• High Ash in Gondwana Basins: Coals from Indian and southern hemisphere basins have high mineral matter contents, often exceeding 40% ash. "
+        "Empirical formulas and machine learning models trained on clean Northern Hemisphere coals (typically 5–15% ash) fail completely when applied "
+        "to high-ash domestic coals [12, 13].\n"
+        "• Unphysical Black-Box Predictions: Standard tree models can occasionally predict higher calorific value when inert ash content increases, "
+        "which violates basic energy conservation [14]. Plant engineers will not trust predictions that contradict combustion physics.\n"
+        "• Missing Uncertainty Margins: Most published algorithms output a single point prediction without confidence bounds, leaving boiler "
+        "operators unaware when incoming coal drifts far outside the model's training distribution [15]."
     )
 
     add_heading1("1.4 OBJECTIVES OF THE WORK")
     add_body(
-        "To resolve the aforementioned challenges, this project formulates an end-to-end, zero-leakage, explainable machine learning architecture. "
-        "The specific objectives are:"
+        "To address these practical constraints, our team focused on building an end-to-end, zero-leakage machine learning system with explicit "
+        "physical safeguards. The specific goals of our project are:"
     )
     add_body(
-        "1. To curate and rigorously clean industrial proximate analysis datasets under strict target isolation to prevent data leakage [16].\n"
-        "2. To engineer thirteen domain-informed geochemical interaction terms capturing fixed carbon mass balance, fuel ratio, inert ballast, and thermal vaporization factors [17].\n"
-        "3. To develop a Hierarchical Mixture-of-Experts (MoE) pipeline pairing an ASTM D388 coal rank gating classifier with dual super-stacking ensembles (CatBoost, XGBoost, LightGBM, RidgeCV) [18-21].\n"
-        "4. To benchmark model generalization on an independent, unseen out-of-domain dataset of 8,423 high-ash coal samples.\n"
-        "5. To integrate Explainable AI (SHAP), Conformal Prediction uncertainty intervals (MAPIE 95%), and Mahalanobis Out-Of-Distribution (OOD) detection into an interactive workstation UI and containerized REST API [22-26]."
+        "1. Clean and preprocess an industrial proximate dataset under strict target isolation so that training statistics never leak into test folds [16].\n"
+        "2. Engineer thirteen geochemical interaction features based on combustion thermodynamics, including fuel ratios, combustible organic fractions, and thermal ballast penalties [17].\n"
+        "3. Construct a Hierarchical Mixture-of-Experts (MoE) architecture combining an ASTM D388 coal rank classifier with specialized Level-0 gradient boosting stacks (CatBoost, XGBoost, LightGBM) and Ridge meta-learners [18-21].\n"
+        "4. Evaluate out-of-domain transfer performance on an independent benchmark of 8,423 unseen high-ash coal samples without retraining.\n"
+        "5. Incorporate SHAP interpretability, 95% conformal prediction intervals, and Mahalanobis outlier detection into an interactive Streamlit UI and a containerized FastAPI endpoint [22-26]."
     )
 
     add_heading1("1.5 ORGANIZATION OF THE REPORT")
     add_body(
-        "The remainder of this report is structured into four subsequent chapters: Chapter 2 reviews literature on empirical coal formulas and machine learning models. "
-        "Chapter 3 elaborates on the system methodology, geochemical feature engineering, MoE architecture, and algorithms. Chapter 4 presents extensive experimental results, "
-        "baseline benchmarks, out-of-domain generalization evaluations, and SHAP explainability. Chapter 5 summarizes the contributions and outlines future scopes."
+        "This project report is organized into five main chapters. Chapter 2 surveys classical empirical formulas and examines recent machine learning "
+        "papers on coal calorific value estimation. Chapter 3 explains our end-to-end methodology, details the thirteen geochemical interaction features, "
+        "and outlines the Hierarchical Mixture-of-Experts architecture. Chapter 4 presents our cross-validation benchmarks, out-of-domain test results "
+        "on 8,423 unseen samples, and SHAP interpretability findings. Chapter 5 concludes the report with a summary of achievements, plant deployment "
+        "details, and practical directions for future work."
     )
 
     doc.add_page_break()
@@ -925,30 +940,33 @@ def create_perfect_report():
 
     add_heading1("2.1 COAL PETROLOGY AND CHEMICAL THERMODYNAMICS")
     add_body(
-        "Coal is a combustible sedimentary organic rock formed over millions of years through the biochemical and geochemical alteration (coalification) "
-        "of ancient vegetative debris under increasing burial pressure and temperature [27]. Petrologically, coal consists of organic maceral groups "
-        "(vitrinite, inertinite, and liptinite) combined with inorganic crystalline minerals (clays, quartz, pyrite, carbonates) [28]. "
-        "The organic portion contains chemical elements—carbon, hydrogen, oxygen, nitrogen, and sulfur—while the inorganic constituents form non-combustible ash residue [2]."
+        "Coal formed over geological epochs as prehistoric swamp vegetation decomposed, settled under sediments, and transformed under intense "
+        "burial heat and tectonic pressure—a progression known as coalification [27]. Under a petrographic microscope, coal reveals distinct "
+        "organic plant remnants termed macerals (vitrinite, inertinite, and liptinite) intermixed with crystalline sedimentary minerals like clays, "
+        "silica quartz, pyrite, and carbonates [28]. The maceral matrix provides combustible organic elements (carbon, hydrogen, sulfur), while the "
+        "mineral inclusions leave behind incombustible ash residue upon firing [2]."
     )
     add_body(
-        "During proximate analysis, fuel behavior is characterized by four empirical fractions:\n"
-        "• Inherent and Surface Moisture: Water retained within capillary pores. During combustion, moisture does not generate heat; rather, it absorbs "
-        "sensible heat and latent heat of vaporization (approx. 2.26 MJ/kg), reducing usable net calorific value [29].\n"
-        "• Volatile Matter: Gaseous hydrocarbon compounds released upon thermal pyrolysis in the absence of oxygen at 900°C. In low-rank coals, volatiles contain "
-        "oxygen-rich non-combustibles (CO2, H2O), whereas in bituminous coals, they are energy-dense hydrocarbons (CH4, C2H6) [30].\n"
-        "• Fixed Carbon: Solid combustible residue remaining after volatile expulsion, consisting primarily of condensed polycyclic aromatic carbon rings.\n"
-        "• Standard Ash: Inorganic incombustible mineral matter remaining after complete oxidation at 750°C. Ash dilutes the combustible organic mass and acts as an inert heat sink."
+        "Proximate analysis separates this complex solid into four practical operational metrics:\n"
+        "• Moisture Fraction: Water trapped in coal micropores. Moisture yields no combustion energy; instead, it consumes sensible heat and absorbs "
+        "latent heat of vaporization (roughly 2.26 MJ per kilogram of water), directly reducing boiler efficiency [29].\n"
+        "• Volatiles Fraction: Combustible gases and tars released when coal is pyrolyzed at 900°C without oxygen. In low-rank lignites, volatile matter "
+        "is heavy with non-combustible carbon dioxide and moisture vapor, whereas in high-rank bituminous coals, volatiles consist of rich aliphatic "
+        "and aromatic hydrocarbons (methane, ethane, ethylene) [30].\n"
+        "• Fixed Carbon: The solid char residue remaining after volatile release, comprising stable polycyclic aromatic carbon sheets that provide long-lasting radiant flame heat.\n"
+        "• Standard Ash Residue: The non-volatile mineral residue left after oxidizing the sample completely at 750°C. High ash content acts as an inert heat sink and leads to boiler slagging."
     )
 
     add_heading1("2.2 CLASSICAL EMPIRICAL CORRELATIONS FOR CALORIFIC VALUE")
     add_body(
-        "Historically, combustion engineers developed empirical linear correlations to estimate calorific value. The earliest classical formula is "
-        "Dulong’s equation (1880), which relies on ultimate elemental analysis [2]:"
+        "Engineers have sought mathematical shortcuts to estimate coal energy content without bomb calorimeters for over a century. The earliest "
+        "widely adopted relation was Dulong's formula (1880), which sums the elemental heats of combustion for carbon, hydrogen, and sulfur [2]:"
     )
     add_equation("2.1", "GCV_Dulong = 80.80 * C + 344.60 * (H - O / 8) + 22.50 * S")
     add_body(
-        "While Dulong’s formula is thermodynamically grounded in heat of combustion heats for pure elements, it necessitates ultimate analysis, which is "
-        "even more laborious and costly than bomb calorimetry. Consequently, researchers formulated proximate-based empirical equations, as summarized in Table 2.1 [31-34]."
+        "Although Dulong's equation is physically sound, running ultimate elemental analysis (C, H, N, S, O) is even slower and more expensive "
+        "than running a bomb calorimeter. This led fuel researchers to derive empirical correlations based solely on proximate analysis data, "
+        "as summarized in Table 2.1 [31-34]."
     )
 
     t21_headers = ["Investigator / Standard", "Input Parameters", "Proposed Formula (kcal/kg)", "Reported Limitations"]
@@ -962,27 +980,29 @@ def create_perfect_report():
 
     add_heading1("2.3 MACHINE LEARNING PARADIGMS IN ENERGY CHARACTERIZATION")
     add_body(
-        "With advances in statistical computing, data-driven regression algorithms emerged to model the complex nonlinear relationship between proximate analysis and GCV [9, 15]. "
-        "Early approaches utilized Multilinear Regression (MLR) and Polynomial Regression, but suffered from severe underfitting due to the multi-body interactions of moisture and ash.\n"
-        "Subsequently, Artificial Neural Networks (ANN), Multilayer Perceptrons (MLP), and Support Vector Machines (SVM) were deployed [9]. While ANNs capture nonlinearities, "
-        "they require extensive hyperparameter tuning, are prone to overfitting on small geological datasets, and act as complete black boxes.\n"
-        "More recently, tree-based ensemble methods—specifically Random Forest (RF) and Gradient Boosted Decision Trees (GBDT)—have demonstrated superior predictive accuracy [18, 19]. "
-        "Algorithms such as XGBoost, LightGBM, and CatBoost use gradient descent over boosting trees, handling correlated inputs effectively and resisting outlier distortion [19, 20]."
+        "As computational power expanded, researchers turned toward statistical machine learning to capture the non-linear relationship between "
+        "proximate components and heating value [9, 15]. Early studies relied on Multilinear Regression (MLR) and polynomial curve fitting, but "
+        "these models underfit badly because moisture and mineral ash impose compounded non-linear penalties on combustion.\n"
+        "Researchers later experimented with Multi-Layer Perceptrons (MLP) and Support Vector Machines (SVM) [9]. While neural nets learned non-linear "
+        "curves, they proved tricky to tune, overfit easily on small core-drill datasets, and offered zero transparency for plant engineers.\n"
+        "In recent years, ensemble tree algorithms—especially Random Forest and Gradient Boosted Decision Trees (GBDT)—have become the leading tools "
+        "in fuel modeling [18, 19]. Libraries like XGBoost, LightGBM, and CatBoost handle tabular inputs effectively and build stepwise corrections "
+        "that capture complex feature dependencies [19, 20]."
     )
 
     add_heading1("2.4 IDENTIFIED GAPS IN EXISTING LITERATURE")
     add_body(
-        "A rigorous systematic review of published literature reveals critical structural weaknesses in existing ML coal characterization frameworks:\n"
-        "1. Target Leakage in Data Preprocessing: Numerous published studies fit missing-value imputers (such as KNN or iterative imputers) or standard scalers "
-        "across the entire dataset before train-test splitting. This leaks target variance into feature space, producing artificially optimistic cross-validation scores [16].\n"
-        "2. Absence of Geochemical Domain Constraints: Standard tree regressors make orthogonal splits (X_i > threshold). They cannot natively compute ratio or interaction terms "
-        "such as Fixed Carbon / Volatile Matter (Fuel Ratio) or ballast heat capacity, forcing the models to approximate physical laws through complex stair-step splits [17].\n"
-        "3. Monolithic Rank Bias: Traditional models train a single generic regressor across all coal ranks. However, under ASTM D388, bituminous coals exhibit entirely distinct "
-        "pyrolysis kinetics compared to sub-bituminous coals or anthracite [10, 11].\n"
-        "4. Out-of-Domain Generalization Failure: Models trained on commercial datasets rarely test their generalization on external, out-of-domain coal formations. "
-        "When presented with high-ash coals (>40% ash), generic models suffer catastrophic performance collapse [12].\n"
-        "5. Absence of Uncertainty and Monotonicity Guarantees: Industrial adoption requires certainty boundaries. Conventional models offer no conformal confidence intervals, "
-        "no out-of-distribution detection, and frequently exhibit unphysical positive gradients between ash content and predicted GCV [14, 23, 25]."
+        "In our review of published research, our team spotted five recurring weaknesses in existing machine learning pipelines for coal characterization:\n"
+        "1. Hidden Data Leakage: Many published papers fit feature scalers and missing-value imputers over their entire dataset before splitting "
+        "into train and test folds. This unintentionally leaks target variance into feature space and produces artificially inflated accuracy numbers [16].\n"
+        "2. Lack of Physical Domain Features: Decision trees split features perpendicular to axes (e.g., Moisture > 8.5%). They cannot naturally compute "
+        "ratios like Fixed Carbon / Volatile Matter or compound ballast drag, forcing trees to approximate smooth physical curves with crude staircases [17].\n"
+        "3. One-Size-Fits-All Model Bias: Most studies train a single regressor across all coal ranks. Yet under ASTM D388 standards, bituminous coals "
+        "release volatile heat differently from sub-bituminous coals or anthracite. A monolithic model ends up compromising across all ranks [10, 11].\n"
+        "4. Poor Out-of-Domain Transfer: Models trained on clean core samples from one coalfield are rarely evaluated on different geological deposits. "
+        "When tested on high-ash coals (>40% ash), generic models suffer massive accuracy drops [12].\n"
+        "5. No Reliability Safeguards or Monotonicity Checks: In operating boilers, an algorithm that outputs point predictions without confidence intervals "
+        "or one that predicts higher GCV as ash increases is unusable. Existing literature rarely provides conformal error bounds or physical monotonicity guarantees [14, 23, 25]."
     )
 
     doc.add_page_break()
@@ -992,9 +1012,10 @@ def create_perfect_report():
 
     add_heading1("3.1 END-TO-END SYSTEM ARCHITECTURE")
     add_body(
-        "To overcome the deficiencies identified in literature, this work designs a robust, zero-leakage, domain-engineered machine learning pipeline. "
-        "Figure 3.1 illustrates the overarching system architecture, encompassing raw data ingestion, zero-leakage preprocessing, thirteen geochemical feature synthesis, "
-        "an ASTM D388 coal rank gating network, dual super-stacking ensembles (Universal and Bituminous), soft Mixture-of-Experts blending, and post-inference safety guardrails."
+        "To address the limitations we identified in literature, our team built an integrated, zero-leakage machine learning system designed "
+        "specifically for industrial proximate analysis data. Figure 3.1 illustrates our complete workflow: raw sample ingestion, leakage-free "
+        "imputation, thirteen geochemical interaction features, an ASTM D388 rank classifier, dual Level-0 stacking ensembles, dynamic mixture-of-experts "
+        "routing, and post-prediction safety checks."
     )
 
     add_figure(str(MODELS_DIR / 'moe_architecture.png'),
@@ -1003,20 +1024,19 @@ def create_perfect_report():
 
     add_heading1("3.2 DATASET ACQUISITION AND ZERO-LEAKAGE PREPROCESSING")
     add_body(
-        "The primary training repository is curated from an extensive geological laboratory database (CQ20261065053.CSV), encompassing thousands of real-world "
-        "core drills, borehole samples, and industrial shipment tests. Each record contains laboratory measurements of Inherent Moisture (%), Volatile Matter (%), "
-        "Standard Ash (%), and Calorific Value recorded in British Thermal Units per pound (Btu/lb).\n"
-        "To standardize data to the International System of Units (SI), heating values are converted to metric Gross Calorific Value (kcal/kg) via the exact physical constant [3]:"
+        "We trained and validated our pipeline on an industrial proximate analysis dataset (CQ20261065053.CSV) containing laboratory records from "
+        "core drills, borehole samples, and commercial coal shipments. Each record includes laboratory measurements for Inherent Moisture (%), "
+        "Volatile Matter (%), Standard Ash (%), and Calorific Value recorded in Btu/lb.\n"
+        "We converted all heating values to metric Gross Calorific Value in kcal/kg using the standard thermodynamic factor [3]:"
     )
     add_equation("3.1", "GCV_{kcal/kg} = GCV_{Btu/lb} / 1.80")
     add_body(
-        "A strict zero-leakage preprocessing protocol is enforced across three sequential stages [16]:\n"
-        "1. Isolated Missing-Value Imputation: Where proximate features had missing values, a K-Nearest Neighbors (KNN) imputer (k=5) was fitted strictly on the "
-        "feature matrix (Moisture, Volatile Matter, Ash). The target GCV was entirely excluded during imputation, preventing target leakage into predictors.\n"
-        "2. Physical Thermodynamic Boundary Filtering: Laboratory samples violating thermodynamic feasibility were filtered out: records with Moisture < 0.1%, "
-        "Standard Ash > 55.0% (unviable for boiler combustion), or GCV < 2,000 kcal/kg were removed.\n"
-        "3. Outlier Purification: Interquartile Range (IQR) thresholding was applied across proximate features to eliminate obvious recording typographical errors "
-        "while preserving authentic natural geological variations."
+        "To prevent data leakage and ensure our cross-validation scores represent true field performance, we applied three strict cleaning steps [16]:\n"
+        "1. Isolated Feature Imputation: When proximate values were missing, we used a K-Nearest Neighbors (KNN) imputer with k=5 fitted solely on the "
+        "proximate feature columns (M, VM, Ash). The target GCV was excluded entirely during imputation, ensuring no target information leaked into input features.\n"
+        "2. Thermodynamic Boundary Checks: We filtered out records that violated combustion physics—such as Moisture under 0.1%, Standard Ash exceeding 55.0% "
+        "(unusable in commercial boilers), or GCV values under 2,000 kcal/kg.\n"
+        "3. Outlier Cleaning: We used Interquartile Range (IQR) checks to catch obvious typing errors and sensor anomalies while keeping genuine geological variations intact."
     )
 
     add_figure(str(MODELS_DIR / 'data_preprocessing_workflow.png'),
@@ -1085,18 +1105,18 @@ def create_perfect_report():
 
     add_heading1("4.1 EXPERIMENTAL SETUP AND PERFORMANCE METRICS")
     add_body(
-        "All models were implemented in Python 3.13 utilizing Scikit-Learn 1.9, XGBoost 3.4, LightGBM 4.7, CatBoost 1.2, Optuna 5.1, and MAPIE. "
-        "Experiments were accelerated using an NVIDIA GeForce RTX GPU. Performance was benchmarked using four standard regression metrics:\n"
-        "• Root Mean Squared Error (RMSE) in kcal/kg: Penalizes large outlier errors heavily.\n"
-        "• Mean Absolute Error (MAE) in kcal/kg: Measures average magnitude of absolute prediction discrepancies.\n"
-        "• Coefficient of Determination (R² Score): Measures proportion of variance explained by the model.\n"
-        "• Mean Absolute Percentage Error (MAPE %): Measures relative percentage deviation across varying calorific ranges."
+        "We developed our models in Python 3.13 using Scikit-Learn 1.9, XGBoost 3.4, LightGBM 4.7, CatBoost 1.2, Optuna 5.1, and MAPIE. "
+        "Training and cross-validation were accelerated locally on an NVIDIA GeForce RTX GPU. We tracked four primary metrics during our evaluation:\n"
+        "• Root Mean Squared Error (RMSE) in kcal/kg: Emphasizes larger prediction mistakes and ensures safety margins.\n"
+        "• Mean Absolute Error (MAE) in kcal/kg: Measures the average point-to-point prediction gap in real energy units.\n"
+        "• Coefficient of Determination (R² Score): Indicates the fraction of total GCV variance explained by the model.\n"
+        "• Mean Absolute Percentage Error (MAPE %): Measures relative percentage accuracy across both low-rank lignite and high-rank bituminous samples."
     )
 
     add_heading1("4.2 BASELINE REGRESSION BENCHMARKING")
     add_body(
-        "To establish whether super-stacking and mixture-of-experts are empirically justified, candidate models were trained under identical 5-fold cross-validation "
-        "on the universal coal dataset. The comparative performance is summarized in Table 4.1."
+        "To verify whether building a super-stacking ensemble was genuinely worth the added complexity, our team trained several standard "
+        "algorithms under identical 5-fold cross-validation splits. Table 4.1 summarizes the benchmark results."
     )
 
     t41_headers = ["Regression Algorithm", "5-Fold CV RMSE (kcal/kg)", "MAE (kcal/kg)", "R² Score", "Performance Summary"]
@@ -1115,8 +1135,8 @@ def create_perfect_report():
 
     add_heading1("4.3 CHAMPION MIXTURE-OF-EXPERTS PERFORMANCE ACROSS RANKS")
     add_body(
-        "When isolating ASTM D388 Bituminous Coals (4,494 samples), the specialized super-stacking pipeline pushes accuracy significantly higher. "
-        "Table 4.2 details the cross-validation and full-fit metrics for the Champion MoE pipeline."
+        "When we trained a specialized expert stack specifically on the 4,494 ASTM D388 Bituminous coal samples, performance improved markedly. "
+        "Table 4.2 details the 5-fold cross-validation and full-fit metrics across our pipeline components."
     )
 
     t42_headers = ["Model Pipeline Component", "CV RMSE (kcal/kg)", "Full-Fit RMSE (kcal/kg)", "Full-Fit MAE (kcal/kg)", "R² Score"]
@@ -1137,9 +1157,9 @@ def create_perfect_report():
 
     add_heading1("4.4 INDEPENDENT OUT-OF-DOMAIN BENCHMARK ON 8,423 UNSEEN SAMPLES")
     add_body(
-        "A critical test of machine learning systems in chemical engineering is evaluating performance on unseen deposits [12]. "
-        "We tested the V1 baseline and Champion MoE models on an independent external dataset of 8,423 high-ash coal samples (indian_coal_augmented.csv) "
-        "with ash contents ranging up to 54.8% without fine-tuning or retraining. Table 4.3 and Figure 4.4 illustrate the results."
+        "The real stress test for any industrial machine learning model is evaluating it on coal from completely different geological formations [12]. "
+        "To test our pipeline's real-world transfer capability, we evaluated our V1 baseline and Champion MoE models on an independent dataset of 8,423 "
+        "unseen high-ash Indian coal samples (ash contents reaching 54.8%) without fine-tuning or retraining any weights. Table 4.3 and Figure 4.4 show the results."
     )
 
     t43_headers = ["Pipeline Evaluated", "Unseen RMSE (kcal/kg)", "Unseen MAE (kcal/kg)", "MAPE (%)", "R² Score"]
@@ -1169,8 +1189,9 @@ def create_perfect_report():
 
     add_heading1("4.5 EXPLAINABLE AI AND THERMODYNAMIC CONSISTENCY WITH SHAP")
     add_body(
-        "To establish trust with power plant engineers, SHAP (SHapley Additive exPlanations) TreeExplainer was integrated to deconstruct the "
-        "internal reasoning of the tree ensembles [22]. Figure 4.5 illustrates the global summary distribution across thousands of coal samples."
+        "Power plant operators need to know why a model predicts a particular heating value. We integrated SHAP (SHapley Additive exPlanations) "
+        "TreeExplainer to inspect our ensemble models and confirm that their learned feature weights follow established combustion thermodynamics [22]. "
+        "Figure 4.5 displays the global SHAP summary across thousands of test samples."
     )
 
     add_figure(str(MODELS_DIR / 'shap_summary.png'),
@@ -1216,36 +1237,34 @@ def create_perfect_report():
 
     add_heading1("5.1 SUMMARY OF COMPLETED RESEARCH")
     add_body(
-        "In this project, a comprehensive machine learning architecture was developed for rapid, high-precision estimation of coal Gross Calorific Value (GCV) "
-        "based strictly on proximate analysis parameters (Moisture, Volatile Matter, Standard Ash). By formulating thirteen domain geochemical interaction features, "
-        "the models were provided with physical proxies for coal rank, combustible organic mass, and thermal ballast vaporization penalty [17, 29]."
+        "In this B.Tech project, our team built and validated an accurate machine learning system that estimates coal Gross Calorific Value (GCV) "
+        "directly from basic proximate analysis data (moisture, volatile matter, ash). By synthesizing thirteen geochemical interaction features, "
+        "we provided our tree models with explicit thermodynamic proxies for fuel rank, combustible mass, and thermal ballast vaporization drag [17, 29]."
     )
     add_body(
-        "To accommodate geological coal rank heterogeneity, a Hierarchical Mixture-of-Experts (MoE) system was constructed. An ASTM D388 gating classifier "
-        "dynamically weights predictions from dual super-stacking ensembles combining CatBoost, XGBoost, LightGBM, and RidgeCV meta-learners. "
-        "The resulting pipeline achieved an RMSE of 149.78 kcal/kg for universal coal and 135.60 kcal/kg for specialized bituminous coal (R² = 95.66%). "
-        "On an independent out-of-domain benchmark of 8,423 unseen high-ash coal samples, our architecture delivered a 61.96 kcal/kg error reduction over standard baselines."
+        "To handle geological coal rank differences without compromising accuracy, we created a Hierarchical Mixture-of-Experts (MoE) system. "
+        "An ASTM D388 Random Forest classifier dynamically routes predictions between a universal stacking model and a specialized bituminous model "
+        "combining CatBoost, XGBoost, LightGBM, and RidgeCV meta-regressors. Our final pipeline reached an RMSE of 149.78 kcal/kg across all coal ranks "
+        "and 135.60 kcal/kg on bituminous coals (R² = 95.66%). When tested against 8,423 unseen high-ash coal samples, our MoE architecture reduced "
+        "prediction error by 61.96 kcal/kg compared to traditional single-model baselines."
     )
 
     add_heading1("5.2 INDUSTRIAL IMPACT AND SOFTWARE DEPLOYMENT")
     add_body(
-        "The trained pipeline was containerized into a production-ready software stack featuring:\n"
-        "1. Streamlit Interactive Workstation UI: Provides dual-tab universal and bituminous prediction interfaces, dynamic slider input validation, "
-        "mass conservation checks (rejecting inputs > 100%), and interactive SHAP waterfall diagnostic plots [22].\n"
-        "2. FastAPI RESTful Service: Exposes high-throughput JSON prediction endpoints (/api/v2/predict_moe, /api/v2/evaluate_reliability), returning "
-        "predicted GCV, 95% conformal prediction intervals, Mahalanobis OOD outlier scores, and Dulong chemical consistency validation [23-25].\n"
-        "3. Dockerized Cloud Deployment: Containerized with standardized Render/Cloudflared bindings, allowing seamless on-premises deployment in thermal plant control rooms."
+        "To make our research practically useful in thermal plants, we packaged our pipeline into an operational software suite:\n"
+        "1. Interactive Streamlit Plant Dashboard: Features universal and bituminous prediction tabs, automatic input validation (checking that M + VM + Ash <= 100%), "
+        "and local SHAP waterfall diagnostic plots [22].\n"
+        "2. High-Throughput FastAPI Microservice: Provides fast JSON prediction endpoints (/api/v2/predict_moe, /api/v2/evaluate_reliability) delivering "
+        "instant GCV numbers, 95% conformal prediction intervals, Mahalanobis anomaly scores, and Dulong thermodynamic consistency checks [23-25].\n"
+        "3. Containerized Deployment: Packaged in Docker with Cloudflared tunnel support, allowing plant engineers to run predictions on-premises or over secure internal networks."
     )
 
     add_heading1("5.3 LIMITATIONS AND FUTURE DIRECTIONS")
     add_body(
-        "While the current pipeline demonstrates industrial-grade performance, several future research avenues are identified:\n"
-        "1. Ultimate Elemental Analysis Hybrid Mode: Incorporating elemental carbon (C), hydrogen (H), nitrogen (N), and sulfur (S) when laboratory data "
-        "is accessible to further reduce prediction RMSE below 50 kcal/kg [2].\n"
-        "2. Direct Sensor Integration: Coupling the software pipeline directly with near-infrared (NIR) or prompt gamma neutron activation analysis (PGNAA) "
-        "sensors mounted over conveyor belts for automated real-time coal bunker sorting.\n"
-        "3. Multi-Task Coal Property Modeling: Extending the multi-task neural network proxy to simultaneously forecast ash fusion temperatures (AFT) "
-        "and Hardgrove Grindability Index (HGI) alongside GCV."
+        "Based on our project findings, we recommend three worthwhile directions for future work:\n"
+        "1. Hybrid Ultimate Analysis Mode: Adding elemental carbon, hydrogen, and sulfur inputs when ultimate lab tests are available to push prediction RMSE below 50 kcal/kg [2].\n"
+        "2. Conveyor Belt Sensor Coupling: Connecting the pipeline directly to real-time radiometric or Near-Infrared (NIR) sensors over boiler feed belts for continuous bunker sorting.\n"
+        "3. Multi-Property Forecasting: Expanding the architecture to predict additional fuel properties simultaneously, such as Ash Fusion Temperature (AFT) and Hardgrove Grindability Index (HGI)."
     )
 
     doc.add_page_break()
