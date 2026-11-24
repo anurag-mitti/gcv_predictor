@@ -20,40 +20,6 @@ from src.moe_pipeline import ChampionMoEPipeline, compute_engineered_features
 app = FastAPI(title="Coal GCV Predictor API")
 
 # ==========================================
-# LOAD MODELS
-# ==========================================
-print("Loading Baseline Models...")
-model_u = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
-BASE_EXPECTED_GCV_UNIVERSAL = 6894.53
-
-model_b = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv_bituminous.joblib')
-BASE_EXPECTED_GCV_BITUMINOUS = 7042.89
-
-FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel_Ratio']
-
-# Universal Evaluator
-df_u = pd.read_csv(BASE_DIR / 'data' / 'processed_coal.csv')
-X_u = df_u[FEATURES]
-y_u = df_u['GCV'].values
-if (BASE_DIR / 'data' / 'y_pred_all_u.npy').exists():
-    y_pred_all_u = np.load(BASE_DIR / 'data' / 'y_pred_all_u.npy')
-else:
-    y_pred_all_u = model_u.predict(X_u)
-scaler_u = StandardScaler().fit(X_u)
-nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transform(X_u))
-
-# Bituminous Evaluator
-df_b = pd.read_csv(BASE_DIR / 'data' / 'processed_coal_bituminous.csv')
-X_b = df_b[FEATURES]
-y_b = df_b['GCV'].values
-if (BASE_DIR / 'data' / 'y_pred_all_b.npy').exists():
-    y_pred_all_b = np.load(BASE_DIR / 'data' / 'y_pred_all_b.npy')
-else:
-    y_pred_all_b = model_b.predict(X_b)
-scaler_b = StandardScaler().fit(X_b)
-nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transform(X_b))
-
-# ==========================================
 # CHAMPION SUPER-STACKING MoE & V2 MODULES
 # ==========================================
 champion_moe = None
@@ -76,6 +42,44 @@ try:
         print("Loaded Multi-Task Ultimate Elemental model.")
 except Exception as e:
     print(f"Notice: Optional module load: {e}")
+
+# Load fallback models ONLY if champion MoE is not available
+model_u = None
+model_b = None
+if champion_moe is None:
+    print("Loading Fallback Baseline Models...")
+    model_u = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv.joblib')
+    model_b = joblib.load(BASE_DIR / 'models' / 'ensemble_gcv_bituminous.joblib')
+
+BASE_EXPECTED_GCV_UNIVERSAL = 6894.53
+BASE_EXPECTED_GCV_BITUMINOUS = 7042.89
+
+FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel_Ratio']
+
+# Universal Evaluator
+df_u = pd.read_csv(BASE_DIR / 'data' / 'processed_coal.csv')
+X_u = df_u[FEATURES]
+y_u = df_u['GCV'].values
+if (BASE_DIR / 'data' / 'y_pred_all_u.npy').exists():
+    y_pred_all_u = np.load(BASE_DIR / 'data' / 'y_pred_all_u.npy')
+else:
+    y_pred_all_u = np.zeros(len(y_u))
+scaler_u = StandardScaler().fit(X_u)
+nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transform(X_u))
+
+# Bituminous Evaluator
+df_b = pd.read_csv(BASE_DIR / 'data' / 'processed_coal_bituminous.csv')
+X_b = df_b[FEATURES]
+y_b = df_b['GCV'].values
+if (BASE_DIR / 'data' / 'y_pred_all_b.npy').exists():
+    y_pred_all_b = np.load(BASE_DIR / 'data' / 'y_pred_all_b.npy')
+else:
+    y_pred_all_b = np.zeros(len(y_b))
+scaler_b = StandardScaler().fit(X_b)
+nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transform(X_b))
+
+import gc
+gc.collect()
 
 print("All models and local evaluators successfully initialized.")
 
@@ -180,9 +184,9 @@ def predict_gcv(req: PredictionRequest):
                 'pred_bituminous': round(float(res_moe['pred_b'][0]), 2)
             }
         except Exception:
-            pred_val = float(model.predict(input_df)[0])
+            pred_val = float(model.predict(input_df)[0]) if model is not None else raw_base
     else:
-        pred_val = float(model.predict(input_df)[0])
+        pred_val = float(model.predict(input_df)[0]) if model is not None else raw_base
 
     # Chemically-Consistent Attribution (Waterfall Diagram)
     total_delta = pred_val - raw_base

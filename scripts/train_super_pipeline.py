@@ -54,9 +54,8 @@ def train_super_stacking_ensemble(X_data, y_data, seed=42):
     cb = CatBoostRegressor(iterations=750, learning_rate=0.03, depth=6, random_seed=seed, verbose=0)
     xb = xgb.XGBRegressor(n_estimators=650, learning_rate=0.025, max_depth=5, subsample=0.8, colsample_bytree=0.8, random_state=seed)
     lb = lgb.LGBMRegressor(n_estimators=650, learning_rate=0.025, num_leaves=38, subsample=0.8, colsample_bytree=0.8, random_state=seed, verbose=-1)
-    et = ExtraTreesRegressor(n_estimators=300, max_depth=16, min_samples_leaf=2, random_state=seed, n_jobs=-1)
     
-    models = [('catboost', cb), ('xgboost', xb), ('lightgbm', lb), ('extratrees', et)]
+    models = [('catboost', cb), ('xgboost', xb), ('lightgbm', lb)]
     oof_matrix = np.zeros((len(X_data), len(models)))
     
     for i, (name, m) in enumerate(models):
@@ -108,7 +107,7 @@ is_bituminous = (
     (df_u['Moisture'] <= 20.0)
 ).astype(int)
 
-gating_clf = RandomForestClassifier(n_estimators=200, max_depth=8, random_state=42)
+gating_clf = RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42)
 gating_clf.fit(X_u, is_bituminous)
 print(f"Gating Network accuracy: {gating_clf.score(X_u, is_bituminous)*100:.2f}%")
 
