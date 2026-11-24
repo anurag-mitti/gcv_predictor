@@ -22,3 +22,7 @@ cloudflared.exe
 .vercel
 .env*
 catboost_info/
+
+# Report binaries
+*.docx
+*.pdf
