@@ -35,7 +35,10 @@ FEATURES = ['Moisture', 'Volatile Matter', 'Standard Ash', 'Fixed Carbon', 'Fuel
 df_u = pd.read_csv(BASE_DIR / 'data' / 'processed_coal.csv')
 X_u = df_u[FEATURES]
 y_u = df_u['GCV'].values
-y_pred_all_u = model_u.predict(X_u)
+if (BASE_DIR / 'data' / 'y_pred_all_u.npy').exists():
+    y_pred_all_u = np.load(BASE_DIR / 'data' / 'y_pred_all_u.npy')
+else:
+    y_pred_all_u = model_u.predict(X_u)
 scaler_u = StandardScaler().fit(X_u)
 nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transform(X_u))
 
@@ -43,7 +46,10 @@ nn_u = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_u.transfo
 df_b = pd.read_csv(BASE_DIR / 'data' / 'processed_coal_bituminous.csv')
 X_b = df_b[FEATURES]
 y_b = df_b['GCV'].values
-y_pred_all_b = model_b.predict(X_b)
+if (BASE_DIR / 'data' / 'y_pred_all_b.npy').exists():
+    y_pred_all_b = np.load(BASE_DIR / 'data' / 'y_pred_all_b.npy')
+else:
+    y_pred_all_b = model_b.predict(X_b)
 scaler_b = StandardScaler().fit(X_b)
 nn_b = NearestNeighbors(n_neighbors=50, metric='euclidean').fit(scaler_b.transform(X_b))
 
