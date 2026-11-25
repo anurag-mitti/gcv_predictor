@@ -280,7 +280,6 @@
         <div class="bg-surface border border-surface-border rounded-lg p-6 flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="text-xs font-mono uppercase tracking-wider text-muted font-medium">Predicted Gross Calorific Value</span>
-            <span id="val-ci" class="text-[11px] font-mono text-muted bg-slate-100 px-2.5 py-0.5 rounded border border-surface-border">95% CI: [5,565 — 5,923] Kcal/kg</span>
           </div>
           
           <div class="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
@@ -609,13 +608,12 @@
       document.getElementById('val-hero-gcv').innerText = Math.round(pred.gcv_kcal).toLocaleString('en-US');
       const mjVal = pred.mj_kg !== undefined ? pred.mj_kg : (pred.gcv_mj !== undefined ? pred.gcv_mj : 0);
       const btuVal = pred.btu_lb !== undefined ? pred.btu_lb : (pred.gcv_btu !== undefined ? pred.gcv_btu : 0);
-      const ciLow = pred.ci_low !== undefined ? pred.ci_low : (pred.ci_lower !== undefined ? pred.ci_lower : 0);
-      const ciHigh = pred.ci_high !== undefined ? pred.ci_high : (pred.ci_upper !== undefined ? pred.ci_upper : 0);
-      
       document.getElementById('val-hero-mj').innerText = mjVal.toFixed(2);
       document.getElementById('val-hero-btu').innerText = Math.round(btuVal).toLocaleString('en-US');
-      const ciPrefix = pred.conformal_certified ? '95% Conformal CI' : '95% CI';
-      document.getElementById('val-ci').innerText = `${ciPrefix}: [${Math.round(ciLow).toLocaleString('en-US')} — ${Math.round(ciHigh).toLocaleString('en-US')}] Kcal/kg`;
+      const valCiElem = document.getElementById('val-ci');
+      if (valCiElem) {
+        valCiElem.remove();
+      }
 
       // OOD Authenticity Guardrail
       if (data.ood) {
